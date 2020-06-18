@@ -2,7 +2,7 @@
 title: "Recombinastics_analysis"
 author: "Kenneth Matreyek"
 date: "6/17/2020"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
