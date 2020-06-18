@@ -5,26 +5,94 @@ date: "6/17/2020"
 output: github_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r Set up the workspace}
+rm(list = ls())
+library(tidyverse)
+library(ggrepel)
+library(reshape)
+library(abind)
 ```
 
-## R Markdown
+## Look at the recombination method test dasta
+```{r data import, fig.height = 4, fig.width = 6}
+methods_data <- read.csv(file = "data/Recombination_method_tests.csv", header = T)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+methods_data_replicates <- ncol(methods_data) - 5
+methods_data$mean <- rowMeans(methods_data[,c("Recombined_Rep1","Recombined_Rep2","Recombined_Rep3","Recombined_Rep4")], na.rm = T)
+methods_data$sd <- sqrt((methods_data$Recombined_Rep1 - methods_data$mean)^2 + 
+                        (methods_data$Recombined_Rep2 - methods_data$mean)^2 + 
+                        (methods_data$Recombined_Rep3 - methods_data$mean)^2 +
+                        (methods_data$Recombined_Rep4 - methods_data$mean)^2) 
+methods_data$se <- methods_data$sd / sqrt(methods_data_replicates - 1)
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+methods_data$upper_conf <- methods_data$mean + methods_data$se * 1.96
+methods_data$lower_conf <- methods_data$mean - methods_data$se * 1.96
 
-```{r cars}
-summary(cars)
+methods_data2 <- methods_data %>% filter(!is.na(Recombined_Rep1) & Method != "none") %>% mutate(concat = paste("Method: ",Method,"\n","Bxb1: ",Bxb1,sep = ""))
+methods_data2$WellSize <- factor(methods_data2$WellSize)
+methods_data2$concat <- factor(methods_data2$concat, levels = methods_data2$concat[c(1,3,2,4)])
+
+methods_data2[methods_data2$lower_conf < 0,"lower_conf"] <- 0
+
+Recombination_method_plot <- ggplot() + 
+  theme_classic() + theme(axis.text.x = element_text(angle = -90, vjust = 0.5)) +
+  scale_y_continuous(expand = c(0,0), limits = c(0,65)) +
+  ylab("% mCherry positive cells") +
+  xlab(NULL) +
+  geom_hline(yintercept = 0) + 
+  geom_errorbar(data = methods_data2, aes(x = concat, ymin = lower_conf, ymax = upper_conf, color = WellSize), 
+                width = 0.2, position=position_dodge(width=0.3), size = 0.3 ) +
+  geom_point(data = methods_data2, aes(x= concat, y=mean, color = WellSize), 
+             position=position_dodge(width=0.3), shape = 95, size = 2) +
+  geom_jitter(data = methods_data2, aes(x= concat, y=Recombined_Rep1, color = WellSize), 
+             size = 0.9, position=position_dodge(width=0.3), alpha = 0.4) +
+  geom_jitter(data = methods_data2, aes(x= concat, y=Recombined_Rep2, color = WellSize), 
+             size = 0.9, position=position_dodge(width=0.3), alpha = 0.4) +
+  geom_jitter(data = methods_data2, aes(x= concat, y=Recombined_Rep3, color = WellSize), 
+             size = 0.9, position=position_dodge(width=0.3), alpha = 0.4) +
+  geom_jitter(data = methods_data2, aes(x= concat, y=Recombined_Rep4, color = WellSize), 
+             size = 0.9, position=position_dodge(width=0.3), alpha = 0.4)
+print(Recombination_method_plot)
 ```
 
-## Including Plots
+# This chunk is for importing the data
+```{r Stuff, fig.height = 4, fig.width = 6}
+rep_1_frame <- read.csv(file = "data/GT_vs_GA_200206.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
+rep_2_frame <- read.csv(file = "data/GT_vs_GA_200213.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
+rep_3_frame <- read.csv(file = "data/GT_vs_GA_200219.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
 
-You can also embed plots, for example:
+replicates <- 2
+rep_1 <- log10(rep_1_frame[,5:8])
+rep_2 <- log10(rep_2_frame[,5:8])
+rep_3 <- log10(rep_3_frame[,5:8])
+means <- (rep_1 + rep_2 + rep_3)/3
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+#https://stackoverflow.com/questions/32609926/performing-element-wise-standard-deviation-in-r-with-two-matrices
+m <- abind(rep_1, rep_2, rep_3, along=3)
+standard_devs <- data.frame(apply(m, 1:2, sd))
+standard_errors <-  standard_devs / sqrt(replicates)
+
+upper_conf <- means + standard_errors * 1.96
+lower_conf <- means - standard_errors * 1.96
+
+label_frame <- rep_1_frame[,1:4] %>% mutate(comboname = paste(bxb1, mix, sep = "\n"))
+
+means2 <- cbind(label_frame,means)
+upper_conf2 <- cbind(label_frame,upper_conf)
+lower_conf2 <- cbind(label_frame,lower_conf)
+#ga_data_filtered$attp <- factor(ga_data_filtered$attp, levels = c("gt","ga"))
+
+GT_vs_GA_plot <- ggplot() + 
+  theme_classic() + theme(axis.text.x = element_text(angle = -90, vjust = 0.5)) +
+  ylab("% cells recombined") +
+  xlab(NULL) +
+  scale_y_log10() +
+  geom_errorbar(data = upper_conf2, aes(x = comboname, color = mix, ymin = 10^lower_conf2$gfp, ymax = 10^upper_conf2$gfp), color = "green", alpha = 0.5, width = 0.2) +
+  geom_errorbar(data = upper_conf2, aes(x = comboname, color = mix, ymin = 10^lower_conf2$mcherry, ymax = 10^upper_conf2$mcherry), color = "red", alpha = 0.5, width = 0.2) +
+  #geom_errorbar(data = upper_conf2, aes(x = comboname, color = mix, ymin = 10^lower_conf2$both, ymax = 10^upper_conf2$both), color = "orange", alpha = 0.5, width = 0.2) +
+  geom_point(data = means2, aes(x = comboname, color = mix, y = 10^gfp), color = "green", alpha = 0.5) +
+  geom_point(data = means2, aes(x = comboname, color = mix, y = 10^mcherry), color = "red", alpha = 0.5) +
+  #geom_point(data = means2, aes(x = comboname, color = mix, y = 10^both), color = "orange", alpha = 0.5) +
+  facet_wrap(~attp)
+print(GT_vs_GA_plot)
 ```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
