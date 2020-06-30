@@ -55,38 +55,6 @@ Recombination_method_plot <- ggplot() +
 print(Recombination_method_plot)
 ```
 
-# This next chunk is for the new cell lines
-```{r}
-llp_comparison1 <- read.csv(file = "data/All_in_one_200317.csv", header = T, stringsAsFactors = F)
-llp_comparison2 <- read.csv(file = "data/All_in_one_200624.csv", header = T, stringsAsFactors = F)
-
-llp_comparison_combined <- rbind(llp_comparison1, llp_comparison2)
-
-llp_comparison_combined$cells <- factor(llp_comparison_combined$cells, levels = c("Int-Blast","iCasp9-Blast","Int-iCasp9-Blast"))
-llp_comparison_combined$bxb1 <- factor(llp_comparison_combined$bxb1, levels = c("none","added"))
-llp_comparison_combined$selection <- factor(llp_comparison_combined$selection, levels = c("none","ap1903"))
-llp_comparison_combined$single_recombinants <- llp_comparison_combined$red + llp_comparison_combined$green
-llp_comparison_combined$count <- 1
-
-llp_comparison_summary <- llp_comparison_combined %>% group_by(cells, bxb1, selection) %>% summarize(mean = mean(single_recombinants), sd = sd(single_recombinants), count = sum(count))
-llp_comparison_summary$upper_ci <- llp_comparison_summary$mean + llp_comparison_summary$sd/sqrt(llp_comparison_summary$count) * 1.96
-llp_comparison_summary$lower_ci <- llp_comparison_summary$mean - llp_comparison_summary$sd/sqrt(llp_comparison_summary$count) * 1.96
-
-llp_comparison_summary[llp_comparison_summary$lower_ci < 0,"lower_ci"] <- 0
-
-LLP_comparison_plot <- ggplot() + theme_bw() + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), panel.grid.major.x = element_blank(), legend.position = "none") + 
-  scale_y_continuous(limits = c(0,105), expand = c(0,0.5)) +
-  geom_hline(yintercept = 0, size = 2, alpha = 0.2) +
-  geom_errorbar(data = llp_comparison_summary, aes(x = cells, ymin = lower_ci, ymax = upper_ci, group = bxb1), alpha = 0.4, width = 0.2, position = position_dodge(width = 0.4)) +
-  geom_point(data = llp_comparison_summary, aes(x = cells, y = mean, shape = bxb1), color = "black", position = position_dodge(width = 0.4)) +
-  facet_grid(cols = vars(selection)) +
-  scale_shape_manual(values = c(1,16)) +
-  xlab(NULL) + ylab("Percent single recombinants")
-LLP_comparison_plot
-ggsave(file = "plots/LLP_comparison_plot.png", LLP_comparison_plot, height = 3, width = 6)
-
-```
 
 # This next chunk is for testing the orthogonality of the GT and GA Bxb1 sequences
 ```{r Stuff, fig.height = 4, fig.width = 6}
