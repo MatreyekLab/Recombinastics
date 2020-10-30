@@ -115,13 +115,13 @@ ggplot() + geom_bar(data = double_landing_pad2_melt, aes(x = concat, y = value, 
 ```
 
 ```{r Diving into clone2 data}
-c2_none_raw <- read.csv(file = "data/flow/Clone2_none.csv")
+c2_none_raw <- read.csv(file = "data/flow/201002/Clone2_none.csv")
 c2_none <- c2_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_none) <- c("fsc","ssc","blu","grn","red","nir")
 c2_none$clone <- "c2"; c2_none$treatment <- "none"
-c2_recomb_raw <- read.csv(file = "data/flow/Clone2_recomb.csv")
+c2_recomb_raw <- read.csv(file = "data/flow/201002/Clone2_recomb.csv")
 c2_recomb <- c2_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_recomb) <- c("fsc","ssc","blu","grn","red","nir")
 c2_recomb$clone <- "c2"; c2_recomb$treatment <- "recomb"
-c2_ap1903_raw <- read.csv(file = "data/flow/Clone2_ap1903.csv")
+c2_ap1903_raw <- read.csv(file = "data/flow/201002/Clone2_ap1903.csv")
 c2_ap1903 <- c2_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
 c2_ap1903$clone <- "c2"; c2_ap1903$treatment <- "ap1903"
 
@@ -169,20 +169,20 @@ c2_gr_plot
 
 c2_arranged_plot <- grid.arrange(c2_bn_plot, c2_bg_plot, c2_br_plot, c2_ng_plot, c2_nr_plot, c2_gr_plot, ncol=6, nrow=1)
 
-ggsave(file = "plots/c2_arranged_plot.png", c2_arranged_plot, height = 3, width = 18)
+ggsave(file = "plots/201002/c2_arranged_plot.png", c2_arranged_plot, height = 3, width = 18)
 
 paste("Percent double positive before selection:", round(sum(c2_recomb$grn >= 3e4 & c2_recomb$red >= 3e4) / nrow(c2_recomb) * 100,2))
 paste("Percent double positive after selection:", round(sum(c2_ap1903$grn >= 3e4 & c2_ap1903$red >= 3e4) / nrow(c2_ap1903) * 100,2))
 ```
 
 ```{r Diving into clone2 data}
-c6_none_raw <- read.csv(file = "data/flow/Clone6_none.csv")
+c6_none_raw <- read.csv(file = "data/flow/201002/Clone6_none.csv")
 c6_none <- c6_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_none) <- c("fsc","ssc","blu","grn","red","nir")
 c6_none$clone <- "c6"; c6_none$treatment <- "none"
-c6_recomb_raw <- read.csv(file = "data/flow/Clone6_recomb.csv")
+c6_recomb_raw <- read.csv(file = "data/flow/201002/Clone6_recomb.csv")
 c6_recomb <- c6_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_recomb) <- c("fsc","ssc","blu","grn","red","nir")
 c6_recomb$clone <- "c6"; c6_recomb$treatment <- "recomb"
-c6_ap1903_raw <- read.csv(file = "data/flow/Clone6_ap1903.csv")
+c6_ap1903_raw <- read.csv(file = "data/flow/201002/Clone6_ap1903.csv")
 c6_ap1903 <- c6_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
 c6_ap1903$clone <- "c6"; c6_ap1903$treatment <- "ap1903"
 
@@ -230,20 +230,20 @@ c6_gr_plot
 
 c6_arranged_plot <- grid.arrange(c6_bn_plot, c6_bg_plot, c6_br_plot, c6_ng_plot, c6_nr_plot, c6_gr_plot, ncol=6, nrow=1)
 
-ggsave(file = "plots/c6_arranged_plot.png", c6_arranged_plot, height = 3, width = 18)
+ggsave(file = "plots/201002/c6_arranged_plot.png", c6_arranged_plot, height = 3, width = 18)
 
 paste("Percent double positive before selection:", round(sum(c6_recomb$grn >= 3e4 & c6_recomb$red >= 3e4) / nrow(c6_recomb) * 100,2))
 paste("Percent double positive after selection:", round(sum(c6_ap1903$grn >= 3e4 & c6_ap1903$red >= 3e4) / nrow(c6_ap1903) * 100,2))
 ```
 
 ```{r Diving into clone11 data}
-c11_none_raw <- read.csv(file = "data/flow/Clone11_none.csv")
+c11_none_raw <- read.csv(file = "data/flow/201002/Clone11_none.csv")
 c11_none <- c11_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_none) <- c("fsc","ssc","blu","grn","red","nir")
 c11_none$clone <- "c11"; c11_none$treatment <- "none"
-c11_recomb_raw <- read.csv(file = "data/flow/Clone11_recomb.csv")
+c11_recomb_raw <- read.csv(file = "data/flow/201002/Clone11_recomb.csv")
 c11_recomb <- c11_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_recomb) <- c("fsc","ssc","blu","grn","red","nir")
 c11_recomb$clone <- "c11"; c11_recomb$treatment <- "recomb"
-c11_ap1903_raw <- read.csv(file = "data/flow/Clone11_ap1903.csv")
+c11_ap1903_raw <- read.csv(file = "data/flow/201002/Clone11_ap1903.csv")
 c11_ap1903 <- c11_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
 c11_ap1903$clone <- "c11"; c11_ap1903$treatment <- "ap1903"
 
@@ -291,11 +291,204 @@ c11_gr_plot
 
 c11_arranged_plot <- grid.arrange(c11_bn_plot, c11_bg_plot, c11_br_plot, c11_ng_plot, c11_nr_plot, c11_gr_plot, ncol=6, nrow=1)
 
-ggsave(file = "plots/c11_arranged_plot.png", c11_arranged_plot, height = 3, width = 18)
+ggsave(file = "plots/201002/c11_arranged_plot.png", c11_arranged_plot, height = 3, width = 18)
 
 paste("Percent double positive before selection:", round(sum(c11_recomb$grn >= 3e4 & c11_recomb$red >= 3e4) / nrow(c11_recomb) * 100,2))
 paste("Percent double positive after selection:", round(sum(c11_ap1903$grn >= 3e4 & c11_ap1903$red >= 3e4) / nrow(c11_ap1903) * 100,2))
 ```
+
+
+
+
+##### THIS IS NOW THE REPEAT SET OF DATA
+
+```{r Diving into clone2 data}
+c2_none_raw <- read.csv(file = "data/flow/201016/Clone2_none.csv")
+c2_none <- c2_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_none) <- c("fsc","ssc","blu","grn","red","nir")
+c2_none$clone <- "c2"; c2_none$treatment <- "none"
+c2_recomb_raw <- read.csv(file = "data/flow/201016/Clone2_recomb.csv")
+c2_recomb <- c2_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_recomb) <- c("fsc","ssc","blu","grn","red","nir")
+c2_recomb$clone <- "c2"; c2_recomb$treatment <- "recomb"
+c2_ap1903_raw <- read.csv(file = "data/flow/201016/Clone2_ap1903.csv")
+c2_ap1903 <- c2_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
+c2_ap1903$clone <- "c2"; c2_ap1903$treatment <- "ap1903"
+
+
+cell_number <- 2000
+combined_data <- rbind(c2_none[1:cell_number,], c2_recomb[1:cell_number,], c2_ap1903[1:cell_number,])
+combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
+
+plot_alpha <- 0.2
+axis_limits <- c(10,1e6)
+
+custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
+
+c2_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
+
+c2_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
+
+c2_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
+
+c2_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
+
+c2_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
+
+c2_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
+  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
+c2_gr_plot
+
+c2_arranged_plot <- grid.arrange(c2_bn_plot, c2_bg_plot, c2_br_plot, c2_ng_plot, c2_nr_plot, c2_gr_plot, ncol=6, nrow=1)
+
+ggsave(file = "plots/201016/c2_arranged_plot.png", c2_arranged_plot, height = 3, width = 18)
+
+paste("Percent double positive before selection:", round(sum(c2_recomb$grn >= 3e4 & c2_recomb$red >= 3e4) / nrow(c2_recomb) * 100,2))
+paste("Percent double positive after selection:", round(sum(c2_ap1903$grn >= 3e4 & c2_ap1903$red >= 3e4) / nrow(c2_ap1903) * 100,2))
+```
+
+```{r Diving into clone2 data}
+c6_none_raw <- read.csv(file = "data/flow/201016/Clone6_none.csv")
+c6_none <- c6_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_none) <- c("fsc","ssc","blu","grn","red","nir")
+c6_none$clone <- "c6"; c6_none$treatment <- "none"
+c6_recomb_raw <- read.csv(file = "data/flow/201016/Clone6_recomb.csv")
+c6_recomb <- c6_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_recomb) <- c("fsc","ssc","blu","grn","red","nir")
+c6_recomb$clone <- "c6"; c6_recomb$treatment <- "recomb"
+c6_ap1903_raw <- read.csv(file = "data/flow/201016/Clone6_ap1903.csv")
+c6_ap1903 <- c6_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
+c6_ap1903$clone <- "c6"; c6_ap1903$treatment <- "ap1903"
+
+
+cell_number <- 2000
+combined_data <- rbind(c6_none[1:cell_number,], c6_recomb[1:cell_number,], c6_ap1903[1:cell_number,])
+combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
+
+plot_alpha <- 0.2
+axis_limits <- c(10,1e6)
+
+custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
+
+c6_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
+
+c6_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
+
+c6_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
+
+c6_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
+
+c6_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
+
+c6_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
+  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
+c6_gr_plot
+
+c6_arranged_plot <- grid.arrange(c6_bn_plot, c6_bg_plot, c6_br_plot, c6_ng_plot, c6_nr_plot, c6_gr_plot, ncol=6, nrow=1)
+
+ggsave(file = "plots/201016/c6_arranged_plot.png", c6_arranged_plot, height = 3, width = 18)
+
+paste("Percent double positive before selection:", round(sum(c6_recomb$grn >= 3e4 & c6_recomb$red >= 3e4) / nrow(c6_recomb) * 100,2))
+paste("Percent double positive after selection:", round(sum(c6_ap1903$grn >= 3e4 & c6_ap1903$red >= 3e4) / nrow(c6_ap1903) * 100,2))
+```
+
+```{r Diving into clone11 data}
+c11_none_raw <- read.csv(file = "data/flow/201016/Clone11_none.csv")
+c11_none <- c11_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_none) <- c("fsc","ssc","blu","grn","red","nir")
+c11_none$clone <- "c11"; c11_none$treatment <- "none"
+c11_recomb_raw <- read.csv(file = "data/flow/201016/Clone11_recomb.csv")
+c11_recomb <- c11_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_recomb) <- c("fsc","ssc","blu","grn","red","nir")
+c11_recomb$clone <- "c11"; c11_recomb$treatment <- "recomb"
+c11_ap1903_raw <- read.csv(file = "data/flow/201016/Clone11_ap1903.csv")
+c11_ap1903 <- c11_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
+c11_ap1903$clone <- "c11"; c11_ap1903$treatment <- "ap1903"
+
+
+cell_number <- 2000
+combined_data <- rbind(c11_none[1:cell_number,], c11_recomb[1:cell_number,], c11_ap1903[1:cell_number,])
+combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
+
+plot_alpha <- 0.2
+axis_limits <- c(10,1e6)
+
+custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
+
+c11_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
+
+c11_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
+
+c11_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
+
+c11_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
+
+c11_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
+
+c11_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
+  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
+c11_gr_plot
+
+c11_arranged_plot <- grid.arrange(c11_bn_plot, c11_bg_plot, c11_br_plot, c11_ng_plot, c11_nr_plot, c11_gr_plot, ncol=6, nrow=1)
+
+ggsave(file = "plots/201016/c11_arranged_plot.png", c11_arranged_plot, height = 3, width = 18)
+
+paste("Percent double positive before selection:", round(sum(c11_recomb$grn >= 3e4 & c11_recomb$red >= 3e4) / nrow(c11_recomb) * 100,2))
+paste("Percent double positive after selection:", round(sum(c11_ap1903$grn >= 3e4 & c11_ap1903$red >= 3e4) / nrow(c11_ap1903) * 100,2))
+```
+
+
+
+
+
 
 
 ```{r Bringing umap into this}
