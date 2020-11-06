@@ -485,6 +485,34 @@ paste("Percent double positive before selection:", round(sum(c11_recomb$grn >= 3
 paste("Percent double positive after selection:", round(sum(c11_ap1903$grn >= 3e4 & c11_ap1903$red >= 3e4) / nrow(c11_ap1903) * 100,2))
 ```
 
+```{r Seeing how acquisition speed affects data precision}
+
+## Cell densities correspond to 1.66e6 for "3", 5.25e5 for "2", and 1.66e5 for "1"
+opt1 <- read.csv(file = "data/flow/201106/1_dense_500.csv", header = T) %>% mutate(density = 3, speed = 500)
+opt2 <- read.csv(file = "data/flow/201106/2_dense_200.csv", header = T) %>% mutate(density = 3, speed = 200)
+opt3 <- read.csv(file = "data/flow/201106/3_dense_100.csv", header = T) %>% mutate(density = 3, speed = 100)
+opt4 <- read.csv(file = "data/flow/201106/4_med_500.csv", header = T) %>% mutate(density = 2, speed = 500)
+opt5 <- read.csv(file = "data/flow/201106/5_med_200.csv", header = T) %>% mutate(density = 2, speed = 200)
+opt6 <- read.csv(file = "data/flow/201106/6_med_100.csv", header = T) %>% mutate(density = 2, speed = 100)
+opt7 <- read.csv(file = "data/flow/201106/7_sparse_500.csv", header = T) %>% mutate(density = 1, speed = 500)
+opt8 <- read.csv(file = "data/flow/201106/8_sparse_200.csv", header = T) %>% mutate(density = 1, speed = 200)
+opt9 <- read.csv(file = "data/flow/201106/9_sparse_100.csv", header = T) %>% mutate(density = 1, speed = 100)
+opt_comb <- rbind(opt1, opt2, opt3, opt4, opt5, opt6, opt7, opt8, opt9)
+opt_comb$density <- as.factor(opt_comb$density)
+opt_comb$speed <- as.factor(opt_comb$speed)
+
+ggplot() + theme_bw() + scale_x_log10() + labs(x = "BFP fluoresence", y = "Plots are different cell densities", color = "Speed") + 
+  geom_density(data = opt_comb, aes(x = BL1.A, color = speed), adjust = 1/3) + facet_grid(rows =  vars(density))
+
+ggplot() + theme_bw() + scale_x_log10() + labs(x = "BFP fluoresence", y = "Plots are different acquisition speeds", color = "Cell density") + 
+  geom_density(data = opt_comb, aes(x = BL1.A, color = density), adjust = 1/3) + facet_grid(rows =  vars(speed))
+```
+
+
+
+
+
+
 
 
 
