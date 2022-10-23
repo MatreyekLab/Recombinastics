@@ -1,0 +1,5 @@
+﻿replicate,sample,plasmid,result,reads,fraction
+1,Flanked,G718A,excised,269508,0.827419786
+1,Flanked,G718A,unexcised,56213,0.172580214
+1,Control,G747A,excised,3853,0.011441077
+1,Control,G747A,unexcised,332916,0.988558923
