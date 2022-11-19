@@ -111,13 +111,13 @@ ggsave(file = "Plots/GT_vs_GA_plot.pdf", GT_vs_GA_plot, height = 1.8, width = 3.
 
 
 ```{r Diving into clone2 data}
-c2_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_none.csv")
+c2_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_none.csv.gz")
 c2_none <- c2_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_none) <- c("fsc","ssc","blu","grn","red","nir")
 c2_none$clone <- "c2"; c2_none$treatment <- "none"
-c2_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_recomb.csv")
+c2_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_recomb.csv.gz")
 c2_recomb <- c2_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_recomb) <- c("fsc","ssc","blu","grn","red","nir")
 c2_recomb$clone <- "c2"; c2_recomb$treatment <- "recomb"
-c2_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_ap1903.csv")
+c2_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_ap1903.csv.gz")
 c2_ap1903 <- c2_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
 c2_ap1903$clone <- "c2"; c2_ap1903$treatment <- "ap1903"
 
@@ -172,13 +172,13 @@ paste("Percent double positive after selection:", round(sum(c2_ap1903$grn >= 3e4
 ```
 
 ```{r Diving into clone2 data}
-c6_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_none.csv")
+c6_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_none.csv.gz")
 c6_none <- c6_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_none) <- c("fsc","ssc","blu","grn","red","nir")
 c6_none$clone <- "c6"; c6_none$treatment <- "none"
-c6_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_recomb.csv")
+c6_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_recomb.csv.gz")
 c6_recomb <- c6_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_recomb) <- c("fsc","ssc","blu","grn","red","nir")
 c6_recomb$clone <- "c6"; c6_recomb$treatment <- "recomb"
-c6_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_ap1903.csv")
+c6_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_ap1903.csv.gz")
 c6_ap1903 <- c6_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
 c6_ap1903$clone <- "c6"; c6_ap1903$treatment <- "ap1903"
 
@@ -233,13 +233,13 @@ paste("Percent double positive after selection:", round(sum(c6_ap1903$grn >= 3e4
 ```
 
 ```{r Diving into clone11 data}
-c11_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_none.csv")
+c11_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_none.csv.gz")
 c11_none <- c11_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_none) <- c("fsc","ssc","blu","grn","red","nir")
 c11_none$clone <- "c11"; c11_none$treatment <- "none"
-c11_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_recomb.csv")
+c11_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_recomb.csv.gz")
 c11_recomb <- c11_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_recomb) <- c("fsc","ssc","blu","grn","red","nir")
 c11_recomb$clone <- "c11"; c11_recomb$treatment <- "recomb"
-c11_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_ap1903.csv")
+c11_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_ap1903.csv.gz")
 c11_ap1903 <- c11_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
 c11_ap1903$clone <- "c11"; c11_ap1903$treatment <- "ap1903"
 
@@ -299,13 +299,13 @@ paste("Percent double positive after selection:", round(sum(c11_ap1903$grn >= 3e
 ##### THIS IS NOW THE REPEAT SET OF DATA
 
 ```{r Diving into clone2 data}
-c2_none_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone2_none.csv")
+c2_none_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone2_none.csv.gz")
 c2_none <- c2_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_none) <- c("fsc","ssc","blu","grn","red","nir")
 c2_none$clone <- "c2"; c2_none$treatment <- "none"
-c2_recomb_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone2_recomb.csv")
+c2_recomb_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone2_recomb.csv.gz")
 c2_recomb <- c2_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_recomb) <- c("fsc","ssc","blu","grn","red","nir")
 c2_recomb$clone <- "c2"; c2_recomb$treatment <- "recomb"
-c2_ap1903_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone2_ap1903.csv")
+c2_ap1903_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone2_ap1903.csv.gz")
 c2_ap1903 <- c2_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
 c2_ap1903$clone <- "c2"; c2_ap1903$treatment <- "ap1903"
 
@@ -360,13 +360,13 @@ paste("Percent double positive after selection:", round(sum(c2_ap1903$grn >= 3e4
 ```
 
 ```{r Diving into clone2 data}
-c6_none_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone6_none.csv")
+c6_none_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone6_none.csv.gz")
 c6_none <- c6_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_none) <- c("fsc","ssc","blu","grn","red","nir")
 c6_none$clone <- "c6"; c6_none$treatment <- "none"
-c6_recomb_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone6_recomb.csv")
+c6_recomb_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone6_recomb.csv.gz")
 c6_recomb <- c6_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_recomb) <- c("fsc","ssc","blu","grn","red","nir")
 c6_recomb$clone <- "c6"; c6_recomb$treatment <- "recomb"
-c6_ap1903_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone6_ap1903.csv")
+c6_ap1903_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone6_ap1903.csv.gz")
 c6_ap1903 <- c6_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
 c6_ap1903$clone <- "c6"; c6_ap1903$treatment <- "ap1903"
 
@@ -421,13 +421,13 @@ paste("Percent double positive after selection:", round(sum(c6_ap1903$grn >= 3e4
 ```
 
 ```{r Diving into clone11 data}
-c11_none_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone11_none.csv")
+c11_none_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone11_none.csv.gz")
 c11_none <- c11_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_none) <- c("fsc","ssc","blu","grn","red","nir")
 c11_none$clone <- "c11"; c11_none$treatment <- "none"
-c11_recomb_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone11_recomb.csv")
+c11_recomb_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone11_recomb.csv.gz")
 c11_recomb <- c11_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_recomb) <- c("fsc","ssc","blu","grn","red","nir")
 c11_recomb$clone <- "c11"; c11_recomb$treatment <- "recomb"
-c11_ap1903_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone11_ap1903.csv")
+c11_ap1903_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone11_ap1903.csv.gz")
 c11_ap1903 <- c11_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
 c11_ap1903$clone <- "c11"; c11_ap1903$treatment <- "ap1903"
 
@@ -697,8 +697,8 @@ flanking_flow_df <- data.frame("flow" = NA, "frac_unexcised" = NA)
 flank_red_pos_cutoff <- 3e3
 
 ## F46 LSR2
-f46_g718a <- read.csv(file = "data/flow/Flanking/LSR2/F46_G718A_029_Singlets.csv") %>% mutate("flow" = "F46", sample = "Flanked")
-f46_g747a <- read.csv(file = "data/flow/Flanking/LSR2/F46_G747A_030_Singlets.csv") %>% mutate("flow" = "F46", sample = "Control")
+f46_g718a <- read.csv(file = "data/flow/Flanking/LSR2/F46_G718A_029_Singlets.csv.gz") %>% mutate("flow" = "F46", sample = "Flanked")
+f46_g747a <- read.csv(file = "data/flow/Flanking/LSR2/F46_G747A_030_Singlets.csv.gz") %>% mutate("flow" = "F46", sample = "Control")
 
 flank_expt_cell_num <- 12000
 flank_red_pos_cutoff <- 1e4
@@ -726,9 +726,9 @@ f46_fraction_unexcised <- sum((f46_subset %>% filter(sample == "Flanked"))$ratio
 flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F46", "frac_unexcised" = f46_fraction_unexcised))
 
 ## F84
-f84_none <- read.csv(file = "data/flow/Flanking/F84_None_Sample(1)_Singlets.csv") %>% mutate("flow" = "F84", sample = "None")
-f84_g718a <- read.csv(file = "data/flow/Flanking/F84_G718A_Sample(4)_Singlets.csv") %>% mutate("flow" = "F84", sample = "Flanked")
-f84_g747a <- read.csv(file = "data/flow/Flanking/F84_G747A_Sample(5)_Singlets.csv") %>% mutate("flow" = "F84", sample = "Control")
+f84_none <- read.csv(file = "data/flow/Flanking/F84_None_Sample(1)_Singlets.csv.gz") %>% mutate("flow" = "F84", sample = "None")
+f84_g718a <- read.csv(file = "data/flow/Flanking/F84_G718A_Sample(4)_Singlets.csv.gz") %>% mutate("flow" = "F84", sample = "Flanked")
+f84_g747a <- read.csv(file = "data/flow/Flanking/F84_G747A_Sample(5)_Singlets.csv.gz") %>% mutate("flow" = "F84", sample = "Control")
 
 flank_expt_cell_num <- 90000
 flank_red_pos_cutoff <- 5e3
@@ -757,9 +757,9 @@ flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F84", "frac_une
 
 
 ## F101 Aria
-f101_none <- read.csv(file = "data/flow/Flanking/Aria/F101_None_001_Singlets.csv") %>% mutate("flow" = "F101", sample = "None")
-f101_g718a <- read.csv(file = "data/flow/Flanking/Aria/F101_G718A_002_Singlets.csv") %>% mutate("flow" = "F101", sample = "Flanked")
-f101_g747a <- read.csv(file = "data/flow/Flanking/Aria/F101_G747A_003_Singlets.csv") %>% mutate("flow" = "F101", sample = "Control")
+f101_none <- read.csv(file = "data/flow/Flanking/Aria/F101_None_001_Singlets.csv.gz") %>% mutate("flow" = "F101", sample = "None")
+f101_g718a <- read.csv(file = "data/flow/Flanking/Aria/F101_G718A_002_Singlets.csv.gz") %>% mutate("flow" = "F101", sample = "Flanked")
+f101_g747a <- read.csv(file = "data/flow/Flanking/Aria/F101_G747A_003_Singlets.csv.gz") %>% mutate("flow" = "F101", sample = "Control")
 
 flank_expt_cell_num <- 2400
 flank_red_pos_cutoff <- 5e3
@@ -788,8 +788,8 @@ flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F101", "frac_un
 
 
 ## F114
-f114_g718a <- read.csv(file = "data/flow/Flanking/F114_G718A_A2_Single Cells.csv") %>% mutate("flow" = "F114", sample = "Flanked")
-f114_g747a <- read.csv(file = "data/flow/Flanking/F114_G747A_A3_Single Cells.csv") %>% mutate("flow" = "F114", sample = "Control")
+f114_g718a <- read.csv(file = "data/flow/Flanking/F114_G718A_A2_Single Cells.csv.gz") %>% mutate("flow" = "F114", sample = "Flanked")
+f114_g747a <- read.csv(file = "data/flow/Flanking/F114_G747A_A3_Single Cells.csv.gz") %>% mutate("flow" = "F114", sample = "Control")
 
 flank_expt_cell_num <- 45000
 flank_red_pos_cutoff <- 3e3
@@ -818,8 +818,8 @@ flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F114", "frac_un
 
 
 ## F116
-f116_g718a <- read.csv(file = "data/flow/Flanking/F116_G718A_H11_Singlets.csv") %>% mutate("flow" = "F116", sample = "Flanked")
-f116_g747a <- read.csv(file = "data/flow/Flanking/F116_G747A_H12_Singlets.csv") %>% mutate("flow" = "F116", sample = "Control")
+f116_g718a <- read.csv(file = "data/flow/Flanking/F116_G718A_H11_Singlets.csv.gz") %>% mutate("flow" = "F116", sample = "Flanked")
+f116_g747a <- read.csv(file = "data/flow/Flanking/F116_G747A_H12_Singlets.csv.gz") %>% mutate("flow" = "F116", sample = "Control")
 flank_expt_cell_num <- 25000
 flank_red_pos_cutoff <- 5e3
 f116 <- rbind(f116_g718a[1:flank_expt_cell_num,], f116_g747a[1:flank_expt_cell_num,])
@@ -846,9 +846,9 @@ flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F116", "frac_un
 
 
 ## F119
-f119_none <- read.csv(file = "data/flow/Flanking/F119_None_G11_Singlets.csv") %>% mutate("flow" = "F119", sample = "None")
-f119_g718a <- read.csv(file = "data/flow/Flanking/F119_G718A_H11_Singlets.csv") %>% mutate("flow" = "F119", sample = "Flanked")
-f119_g747a <- read.csv(file = "data/flow/Flanking/F119_G747A_H12_Singlets.csv") %>% mutate("flow" = "F119", sample = "Control")
+f119_none <- read.csv(file = "data/flow/Flanking/F119_None_G11_Singlets.csv.gz") %>% mutate("flow" = "F119", sample = "None")
+f119_g718a <- read.csv(file = "data/flow/Flanking/F119_G718A_H11_Singlets.csv.gz") %>% mutate("flow" = "F119", sample = "Flanked")
+f119_g747a <- read.csv(file = "data/flow/Flanking/F119_G747A_H12_Singlets.csv.gz") %>% mutate("flow" = "F119", sample = "Control")
 flank_expt_cell_num <- 9000
 flank_red_pos_cutoff <- 5e3
 f119 <- rbind(f119_none[1:flank_expt_cell_num,], f119_g718a[1:flank_expt_cell_num,], f119_g747a[1:flank_expt_cell_num,]) %>% filter(!is.na(sample))
@@ -875,9 +875,9 @@ flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F119", "frac_un
 
 
 ## F130
-f130_none <- read.csv(file = "data/flow/Flanking/F130_none_D10_Singlets.csv") %>% mutate("flow" = "F130", sample = "None")
-f130_g718a <- read.csv(file = "data/flow/Flanking/F130_G718A_D11_Singlets.csv") %>% mutate("flow" = "F130", sample = "Flanked")
-f130_g747a <- read.csv(file = "data/flow/Flanking/F130_G747A_D12_Singlets.csv") %>% mutate("flow" = "F130", sample = "Control")
+f130_none <- read.csv(file = "data/flow/Flanking/F130_none_D10_Singlets.csv.gz") %>% mutate("flow" = "F130", sample = "None")
+f130_g718a <- read.csv(file = "data/flow/Flanking/F130_G718A_D11_Singlets.csv.gz") %>% mutate("flow" = "F130", sample = "Flanked")
+f130_g747a <- read.csv(file = "data/flow/Flanking/F130_G747A_D12_Singlets.csv.gz") %>% mutate("flow" = "F130", sample = "Control")
 flank_expt_cell_num <- 89000
 flank_red_pos_cutoff <- 5e3
 f130 <- rbind(f130_none[1:flank_expt_cell_num,], f130_g718a[1:flank_expt_cell_num,], f130_g747a[1:flank_expt_cell_num,]) %>% filter(!is.na(sample))
@@ -904,9 +904,9 @@ flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F130", "frac_un
 
 
 ## F131
-f131_none <- read.csv(file = "data/flow/Flanking/F131_none_D4_Singlets.csv") %>% mutate("flow" = "F131", sample = "None")
-f131_g718a <- read.csv(file = "data/flow/Flanking/F131_G718A_D5_Singlets.csv") %>% mutate("flow" = "F131", sample = "Flanked")
-f131_g747a <- read.csv(file = "data/flow/Flanking/F131_G747A_D6_Singlets.csv") %>% mutate("flow" = "F131", sample = "Control")
+f131_none <- read.csv(file = "data/flow/Flanking/F131_none_D4_Singlets.csv.gz") %>% mutate("flow" = "F131", sample = "None")
+f131_g718a <- read.csv(file = "data/flow/Flanking/F131_G718A_D5_Singlets.csv.gz") %>% mutate("flow" = "F131", sample = "Flanked")
+f131_g747a <- read.csv(file = "data/flow/Flanking/F131_G747A_D6_Singlets.csv.gz") %>% mutate("flow" = "F131", sample = "Control")
 flank_expt_cell_num <- 190000
 flank_red_pos_cutoff <- 3e3
 f131 <- rbind(f131_none[1:flank_expt_cell_num,], f131_g718a[1:flank_expt_cell_num,], f131_g747a[1:flank_expt_cell_num,]) %>% filter(!is.na(sample))
@@ -933,8 +933,8 @@ flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F131", "frac_un
 
 
 ## F132
-f132_g718a <- read.csv(file = "data/flow/Flanking/F132_G718A_G12_Singlets.csv") %>% mutate("flow" = "F132", sample = "Flanked")
-f132_g747a <- read.csv(file = "data/flow/Flanking/F132_G747A_H1_Singlets.csv") %>% mutate("flow" = "F132", sample = "Control")
+f132_g718a <- read.csv(file = "data/flow/Flanking/F132_G718A_G12_Singlets.csv.gz") %>% mutate("flow" = "F132", sample = "Flanked")
+f132_g747a <- read.csv(file = "data/flow/Flanking/F132_G747A_H1_Singlets.csv.gz") %>% mutate("flow" = "F132", sample = "Control")
 flank_expt_cell_num <- 180000
 flank_red_pos_cutoff <- 3e3
 f132 <- rbind(f132_g718a[1:flank_expt_cell_num,], f132_g747a[1:flank_expt_cell_num,])
@@ -961,8 +961,8 @@ flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F132", "frac_un
 
 
 ## f280
-f280_g718a <- read.csv(file = "data/flow/Flanking/F280_G718A unselected.csv") %>% mutate("flow" = "f280", sample = "Flanked")
-f280_g747a <- read.csv(file = "data/flow/Flanking/F280_G747A_unselected.csv") %>% mutate("flow" = "f280", sample = "Control")
+f280_g718a <- read.csv(file = "data/flow/Flanking/F280_G718A unselected.csv.gz") %>% mutate("flow" = "f280", sample = "Flanked")
+f280_g747a <- read.csv(file = "data/flow/Flanking/F280_G747A_unselected.csv.gz") %>% mutate("flow" = "f280", sample = "Control")
 flank_expt_cell_num <- 180000
 flank_red_pos_cutoff <- 3e3
 f280 <- rbind(f280_g718a[1:flank_expt_cell_num,], f280_g747a[1:flank_expt_cell_num,])
