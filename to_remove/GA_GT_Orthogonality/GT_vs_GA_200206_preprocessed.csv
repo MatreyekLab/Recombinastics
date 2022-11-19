@@ -1,0 +1,9 @@
+Name,Cell,Plasmid,Bxb1,GFP,mCherry
+Sample.fcs,LLPicasp9c12,EGFP/421C,yes,29.4,0.24
+Sample(1).fcs,LLPicasp9c12,mCherry/413A,yes,0.15,18.7
+Sample(2).fcs,LLPicasp9c12,EGFP/421C,no,3.07E-03,6.37E-03
+Sample(3).fcs,LLPicasp9c12,mCherry/413A,no,5.62E-04,5.62E-04
+Sample(4).fcs,G417A1,EGFP/421C,yes,8.25E-03,1.16
+Sample(5).fcs,G417A1,mCherry/413A,yes,4.09,0.033
+Sample(6).fcs,G417A1,EGFP/421C,no,0.056,0.028
+Sample(7).fcs,G417A1,mCherry/413A,no,8.60E-03,9.93E-04

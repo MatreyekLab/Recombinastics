@@ -715,7 +715,7 @@ ggplot() + theme_bw() +
 f46$ratio <- f46$B525.A / f46$YG610.A
 f46_subset <- f46 %>% filter(YG610.A >= flank_red_pos_cutoff)
 
-f46_control_95pct_interval <- c(quantile((f46_subset %>% filter(sample == "Control"))$ratio,0.025),quantile((f46_subset %>% filter(sample == "Control"))$ratio,0.975))
+f46_control_95pct_interval <- c(quantile((f46_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f46_subset %>% filter(sample == "Control"))$ratio,0.975))
 
 ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
   geom_histogram(data = f46_subset, aes(x = ratio), binwidth = 0.01) +
@@ -745,7 +745,7 @@ ggplot() + theme_bw() +
 f84$ratio <- f84$BL1.A / f84$YL2.A
 f84_subset <- f84 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
-f84_control_95pct_interval <- c(quantile((f84_subset %>% filter(sample == "Control"))$ratio,0.025),quantile((f84_subset %>% filter(sample == "Control"))$ratio,0.975))
+f84_control_95pct_interval <- c(quantile((f84_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f84_subset %>% filter(sample == "Control"))$ratio,0.975))
 
 ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
   geom_histogram(data = f84_subset, aes(x = ratio), binwidth = 0.01) +
@@ -776,7 +776,7 @@ ggplot() + theme_bw() +
 f101$ratio <- f101$B515.A / f101$G610.A
 f101_subset <- f101 %>% filter(G610.A >= flank_red_pos_cutoff)
 
-f101_control_95pct_interval <- c(quantile((f101_subset %>% filter(sample == "Control"))$ratio,0.025),quantile((f101_subset %>% filter(sample == "Control"))$ratio,0.975))
+f101_control_95pct_interval <- c(quantile((f101_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f101_subset %>% filter(sample == "Control"))$ratio,0.975))
 
 ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
   geom_histogram(data = f101_subset, aes(x = ratio), binwidth = 0.01) +
@@ -806,7 +806,7 @@ ggplot() + theme_bw() +
 f114$ratio <- f114$BL1.A / f114$YL2.A
 f114_subset <- f114 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
-f114_control_95pct_interval <- c(quantile((f114_subset %>% filter(sample == "Control"))$ratio,0.025),quantile((f114_subset %>% filter(sample == "Control"))$ratio,0.975))
+f114_control_95pct_interval <- c(quantile((f114_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f114_subset %>% filter(sample == "Control"))$ratio,0.975))
 
 ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
   geom_histogram(data = f114_subset, aes(x = ratio), binwidth = 0.01) +
@@ -834,7 +834,7 @@ ggplot() + theme_bw() +
 f116$ratio <- f116$BL1.A / f116$YL2.A
 f116_subset <- f116 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
-f116_control_95pct_interval <- c(quantile((f116_subset %>% filter(sample == "Control"))$ratio,0.025),quantile((f116_subset %>% filter(sample == "Control"))$ratio,0.975))
+f116_control_95pct_interval <- c(quantile((f116_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f116_subset %>% filter(sample == "Control"))$ratio,0.975))
 
 ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
   geom_histogram(data = f116_subset, aes(x = ratio), binwidth = 0.01) +
@@ -863,7 +863,7 @@ ggplot() + theme_bw() +
 f119$ratio <- f119$BL1.A / f119$YL2.A
 f119_subset <- f119 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
-f119_control_95pct_interval <- c(quantile((f119_subset %>% filter(sample == "Control"))$ratio,0.025),quantile((f119_subset %>% filter(sample == "Control"))$ratio,0.975))
+f119_control_95pct_interval <- c(quantile((f119_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f119_subset %>% filter(sample == "Control"))$ratio,0.975))
 
 ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
   geom_histogram(data = f119_subset, aes(x = ratio), binwidth = 0.01) +
@@ -892,7 +892,7 @@ ggplot() + theme_bw() +
 f130$ratio <- f130$BL1.A / f130$YL2.A
 f130_subset <- f130 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
-f130_control_95pct_interval <- c(quantile((f130_subset %>% filter(sample == "Control"))$ratio,0.025),quantile((f130_subset %>% filter(sample == "Control"))$ratio,0.975))
+f130_control_95pct_interval <- c(quantile((f130_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f130_subset %>% filter(sample == "Control"))$ratio,0.975))
 
 ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
   geom_histogram(data = f130_subset, aes(x = ratio), binwidth = 0.01) +
@@ -921,7 +921,7 @@ ggplot() + theme_bw() +
 f131$ratio <- f131$BL1.A / f131$YL2.A
 f131_subset <- f131 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
-f131_control_95pct_interval <- c(quantile((f131_subset %>% filter(sample == "Control"))$ratio,0.025),quantile((f131_subset %>% filter(sample == "Control"))$ratio,0.975))
+f131_control_95pct_interval <- c(quantile((f131_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f131_subset %>% filter(sample == "Control"))$ratio,0.975))
 
 ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
   geom_histogram(data = f131_subset, aes(x = ratio), binwidth = 0.01) +
@@ -949,7 +949,7 @@ ggplot() + theme_bw() +
 f132$ratio <- f132$BL1.A / f132$YL2.A
 f132_subset <- f132 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
-f132_control_95pct_interval <- c(quantile((f132_subset %>% filter(sample == "Control"))$ratio,0.025),quantile((f132_subset %>% filter(sample == "Control"))$ratio,0.975))
+f132_control_95pct_interval <- c(quantile((f132_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f132_subset %>% filter(sample == "Control"))$ratio,0.975))
 
 ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
   geom_histogram(data = f132_subset, aes(x = ratio), binwidth = 0.01) +
@@ -958,6 +958,34 @@ ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
 
 f132_fraction_unexcised <- sum((f132_subset %>% filter(sample == "Flanked"))$ratio > f132_control_95pct_interval[1])/nrow((f132_subset %>% filter(sample == "Flanked")))
 flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F132", "frac_unexcised" = f132_fraction_unexcised))
+
+
+## f280
+f280_g718a <- read.csv(file = "data/flow/Flanking/F280_G718A unselected.csv") %>% mutate("flow" = "f280", sample = "Flanked")
+f280_g747a <- read.csv(file = "data/flow/Flanking/F280_G747A_unselected.csv") %>% mutate("flow" = "f280", sample = "Control")
+flank_expt_cell_num <- 180000
+flank_red_pos_cutoff <- 3e3
+f280 <- rbind(f280_g718a[1:flank_expt_cell_num,], f280_g747a[1:flank_expt_cell_num,])
+
+ggplot() + theme_bw() + 
+  scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
+  scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
+  geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) +
+  geom_point(data = f280, aes(x = YL2.A, y = BL1.A), alpha = 0.1) +
+  facet_grid(rows = vars(sample))
+
+f280$ratio <- f280$BL1.A / f280$YL2.A
+f280_subset <- f280 %>% filter(YL2.A >= flank_red_pos_cutoff)
+
+f280_control_95pct_interval <- c(quantile((f280_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f280_subset %>% filter(sample == "Control"))$ratio,0.975))
+
+ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
+  geom_histogram(data = f280_subset, aes(x = ratio), binwidth = 0.01) +
+  facet_grid(rows = vars(sample)) +
+  geom_vline(xintercept  = f280_control_95pct_interval, linetype = 2)
+
+f280_fraction_unexcised <- sum((f280_subset %>% filter(sample == "Flanked"))$ratio > f280_control_95pct_interval[1])/nrow((f280_subset %>% filter(sample == "Flanked")))
+flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "f280", "frac_unexcised" = f280_fraction_unexcised))
 ```
 
 

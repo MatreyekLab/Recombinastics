@@ -1,0 +1,9 @@
+name,attp,bxb1,mix,gfp,both,mcherry,none
+Sample.fcs,gt,yes,(GT)G_(GA)M,27,0.05,0.28,72.6
+Sample(1).fcs,gt,no,(GT)G_(GA)M,0.017,0.15,0.082,99.8
+Sample(2).fcs,gt,yes,(GA)G_(GT)M,0.31,0.049,33.2,66.4
+Sample(3).fcs,gt,no,(GA)G_(GT)M,0.13,0.12,0.04,99.7
+Sample(4).fcs,ga,yes,(GT)G_(GA)M,0.12,0.062,17.7,82.1
+Sample(5).fcs,ga,no,(GT)G_(GA)M,0.12,0.56,0.22,99.1
+Sample(6).fcs,ga,yes,(GA)G_(GT)M,15.1,0.049,0.13,84.8
+Sample(7).fcs,ga,no,(GA)G_(GT)M,0.083,0.031,2.78E-03,99.9

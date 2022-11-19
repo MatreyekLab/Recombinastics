@@ -1,0 +1,64 @@
+---
+title: "Flow Analysis"
+output: html_document
+---
+
+## This chunk is for setup
+```{r workspace setup}
+rm(list = ls())
+library(tidyverse)
+```
+
+## This chunk is for importing the data
+```{r data import}
+input_data <- read.csv(file = "200615_recombination_method_tests.csv", header = T)
+```
+
+## This chunk is for making some summary statistics
+```{r data wrangling}
+recomb_efficiency_replicates <- 4
+input_data$mean <- rowMeans(input_data[,c("Recombined_Rep1","Recombined_Rep2","Recombined_Rep3","Recombined_Rep4")], na.rm = T)
+input_data$sd <- sqrt((input_data$Recombined_Rep1 - input_data$mean)^2 + 
+                        (input_data$Recombined_Rep2 - input_data$mean)^2 + 
+                        (input_data$Recombined_Rep3 - input_data$mean)^2 +
+                        (input_data$Recombined_Rep4 - input_data$mean)^2) 
+input_data$se <- input_data$sd / sqrt(recomb_efficiency_replicates - 1)
+
+input_data$upper_conf <- input_data$mean + input_data$se * 1.96
+input_data$lower_conf <- input_data$mean - input_data$se * 1.96
+```
+
+## This chunk is for basic plotting of the data
+```{r plotting data, fig.height = 1, fig.width = 2}
+complete_data <- input_data %>% filter(!is.na(Recombined_Rep1) & Method != "none") %>% mutate(concat = paste("Method: ",Method,"\n","Bxb1: ",Bxb1,sep = ""))
+complete_data$WellSize <- factor(complete_data$WellSize)
+complete_data$concat <- factor(complete_data$concat, levels = complete_data$concat[c(1,3,2,4)])
+
+complete_data[complete_data$lower_conf < 0,"lower_conf"] <- 0
+
+Recombination_method_plot <- ggplot() + 
+  theme_classic() + theme(axis.text.x = element_text(angle = -90, vjust = 0.5)) +
+  scale_y_continuous(expand = c(0,0), limits = c(0,65)) +
+  ylab("% mCherry positive cells") +
+  xlab(NULL) +
+  geom_hline(yintercept = 0) + 
+  geom_errorbar(data = complete_data, aes(x = concat, ymin = lower_conf, ymax = upper_conf, color = WellSize), 
+                width = 0.2, position=position_dodge(width=0.3), size = 0.3 ) +
+  geom_point(data = complete_data, aes(x= concat, y=mean, color = WellSize), 
+             position=position_dodge(width=0.3), shape = 95, size = 2) +
+  geom_jitter(data = complete_data, aes(x= concat, y=Recombined_Rep1, color = WellSize), 
+             size = 0.9, position=position_dodge(width=0.3), alpha = 0.4) +
+  geom_jitter(data = complete_data, aes(x= concat, y=Recombined_Rep2, color = WellSize), 
+             size = 0.9, position=position_dodge(width=0.3), alpha = 0.4) +
+  geom_jitter(data = complete_data, aes(x= concat, y=Recombined_Rep3, color = WellSize), 
+             size = 0.9, position=position_dodge(width=0.3), alpha = 0.4) +
+  geom_jitter(data = complete_data, aes(x= concat, y=Recombined_Rep4, color = WellSize), 
+             size = 0.9, position=position_dodge(width=0.3), alpha = 0.4)
+print(Recombination_method_plot)
+
+ggsave(file = "Recombination_method_plot.png", Recombination_method_plot, width = 6*1.5, height = 4*1.5, unit = "cm")
+ggsave(file = "Recombination_method_plot.pdf", Recombination_method_plot, width = 6*1.5, height = 4*1.5, unit = "cm")
+```
+
+
+

@@ -1,0 +1,55 @@
+---
+title: "Flow Analysis"
+output: html_document
+---
+
+## This chunk is for setup
+```{r workspace setup}
+rm(list = ls())
+library(tidyverse)
+library(abind)
+```
+
+## This chunk is for importing the data
+```{r Stuff, fig.height = 2, fig.width = 2}
+rep_1_frame <- read.csv(file = "GT_vs_GA_200206.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
+rep_2_frame <- read.csv(file = "GT_vs_GA_200213.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
+rep_3_frame <- read.csv(file = "GT_vs_GA_200219.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
+
+replicates <- 2
+rep_1 <- log10(rep_1_frame[,5:8])
+rep_2 <- log10(rep_2_frame[,5:8])
+rep_3 <- log10(rep_3_frame[,5:8])
+means <- (rep_1 + rep_2 + rep_3)/3
+
+#https://stackoverflow.com/questions/32609926/performing-element-wise-standard-deviation-in-r-with-two-matrices
+m <- abind(rep_1, rep_2, rep_3, along=3)
+standard_devs <- data.frame(apply(m, 1:2, sd))
+standard_errors <-  standard_devs / sqrt(replicates)
+
+upper_conf <- means + standard_errors * 1.96
+lower_conf <- means - standard_errors * 1.96
+
+label_frame <- rep_1_frame[,1:4] %>% mutate(comboname = paste(bxb1, mix, sep = "\n"))
+
+means2 <- cbind(label_frame,means)
+upper_conf2 <- cbind(label_frame,upper_conf)
+lower_conf2 <- cbind(label_frame,lower_conf)
+#ga_data_filtered$attp <- factor(ga_data_filtered$attp, levels = c("gt","ga"))
+
+GT_vs_GA_plot <- ggplot() + 
+  theme_classic() + theme(axis.text.x = element_text(angle = -90, vjust = 0.5)) +
+  ylab("% cells recombined") +
+  xlab(NULL) +
+  scale_y_log10() +
+  geom_errorbar(data = upper_conf2, aes(x = comboname, color = mix, ymin = 10^lower_conf2$gfp, ymax = 10^upper_conf2$gfp), color = "green", alpha = 0.5, width = 0.2) +
+  geom_errorbar(data = upper_conf2, aes(x = comboname, color = mix, ymin = 10^lower_conf2$mcherry, ymax = 10^upper_conf2$mcherry), color = "red", alpha = 0.5, width = 0.2) +
+  geom_errorbar(data = upper_conf2, aes(x = comboname, color = mix, ymin = 10^lower_conf2$both, ymax = 10^upper_conf2$both), color = "orange", alpha = 0.5, width = 0.2) +
+  geom_point(data = means2, aes(x = comboname, color = mix, y = 10^gfp), color = "green", alpha = 0.5) +
+  geom_point(data = means2, aes(x = comboname, color = mix, y = 10^mcherry), color = "red", alpha = 0.5) +
+  geom_point(data = means2, aes(x = comboname, color = mix, y = 10^both), color = "orange", alpha = 0.5) +
+  facet_wrap(~attp)
+GT_vs_GA_plot
+
+ggsave(file = "GT_vs_GA_plot.pdf", GT_vs_GA_plot, width = 6*1.5, height = 5*1.5, unit = "cm")
+```

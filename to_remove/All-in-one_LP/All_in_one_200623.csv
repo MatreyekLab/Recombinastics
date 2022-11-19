@@ -1,0 +1,13 @@
+name,cells,clone,bxb1,selection,red,greed_red,green,neither
+Sample.fcs,G542A,3,added,none,4.45,0.03,4.64,86.9
+Sample(1)_duplicate.fcs,G542A,3,none,none,4.09,0.05,4.3,89
+Sample(2).fcs,Int-Blast,2,added,none,6.75,0.09,9.86,41.3
+Sample(3).fcs,Int-Blast,2,none,none,9.94,0.13,14.5,35.3
+Sample(4).fcs,iCasp9-Blast,12,added,none,0.79,0,0.78,96.9
+Sample(5).fcs,iCasp9-Blast,12,none,none,0,0,0,93.8
+Sample(6).fcs,G542A,3,added,ap1903,17.5,0.78,46.9,1.79
+Sample(7).fcs,G542A,3,none,ap1903,14.2,0.59,53.8,1.6
+Sample(8).fcs,Int-Blast,2,added,ap1903,7.47,0.15,10.9,41.4
+Sample(9).fcs,Int-Blast,2,none,ap1903,10.1,0.34,14.4,34.2
+Sample(10).fcs,iCasp9-Blast,12,added,ap1903,33.7,0.17,37.2,5.32
+Sample(11).fcs,iCasp9-Blast,12,none,ap1903,0,0,0,19.6

@@ -1,0 +1,13 @@
+Name,WellSize,Method,Bxb1,Dox,Recombined_Rep1,Recombined_Rep2,Recombined_Rep3
+Sample.fcs,6,none,no,yes,0,0,0
+Sample(1).fcs,6,A,yes,yes,4.07,12.1,20.1
+Sample(2).fcs,6,B,yes,yes,46.5,45.1,56.8
+Sample(3).fcs,6,A,no,yes,1.26,0.14,0.059
+Sample(4).fcs,6,B,no,yes,0.12,0.11,0.03
+Sample(5).fcs,6,A,yes,no,NA,14.5,0.069
+Sample(6).fcs,24,B,no,yes,1.54E-03,0.025,2.10E-04
+Sample(7).fcs,24,A,yes,yes,7.95,7.28,16.6
+Sample(8).fcs,24,B,yes,yes,36.8,53.2,52.4
+Sample(9).fcs,24,A,no,yes,2.95,0.34,0.016
+Sample(10).fcs,24,B,no,yes,0.035,0.1,0.029
+Sample(11).fcs,24,A,yes,no,NA,0.016,7.88E-03
