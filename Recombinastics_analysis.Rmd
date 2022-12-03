@@ -690,303 +690,293 @@ pca_vectorplot
 ggsave(file = "plots/pca_vectorplot.pdf", pca_vectorplot, height = 2, width = 2)
 ```
 
-
 ```{r Flanking data - Flow Cyometry}
 ## Making a data frame to keep track of how many unexcised cells are observed with G718A
 flanking_flow_df <- data.frame("flow" = NA, "frac_unexcised" = NA)
 flank_red_pos_cutoff <- 3e3
 
-## F46 LSR2
-f46_g718a <- read.csv(file = "data/flow/Flanking/LSR2/F46_G718A_029_Singlets.csv.gz") %>% mutate("flow" = "F46", sample = "Flanked")
-f46_g747a <- read.csv(file = "data/flow/Flanking/LSR2/F46_G747A_030_Singlets.csv.gz") %>% mutate("flow" = "F46", sample = "Control")
-
-flank_expt_cell_num <- 12000
-flank_red_pos_cutoff <- 1e4
-
-f46 <- rbind(f46_g718a[1:flank_expt_cell_num,], f46_g747a[1:flank_expt_cell_num,])
-
-ggplot() + theme_bw() + 
-  scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) +
-  geom_point(data = f46, aes(x = YG610.A, y = B525.A), alpha = 0.01) +
-  facet_grid(rows = vars(sample))
-
-f46$ratio <- f46$B525.A / f46$YG610.A
-f46_subset <- f46 %>% filter(YG610.A >= flank_red_pos_cutoff)
-
-f46_control_95pct_interval <- c(quantile((f46_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f46_subset %>% filter(sample == "Control"))$ratio,0.975))
-
-ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
-  geom_histogram(data = f46_subset, aes(x = ratio), binwidth = 0.01) +
-  facet_grid(rows = vars(sample)) +
-  geom_vline(xintercept  = f46_control_95pct_interval, linetype = 2)
-
-f46_fraction_unexcised <- sum((f46_subset %>% filter(sample == "Flanked"))$ratio > f46_control_95pct_interval[1])/nrow((f46_subset %>% filter(sample == "Flanked")))
-flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F46", "frac_unexcised" = f46_fraction_unexcised))
 
 ## F84
-f84_none <- read.csv(file = "data/flow/Flanking/F84_None_Sample(1)_Singlets.csv.gz") %>% mutate("flow" = "F84", sample = "None")
-f84_g718a <- read.csv(file = "data/flow/Flanking/F84_G718A_Sample(4)_Singlets.csv.gz") %>% mutate("flow" = "F84", sample = "Flanked")
-f84_g747a <- read.csv(file = "data/flow/Flanking/F84_G747A_Sample(5)_Singlets.csv.gz") %>% mutate("flow" = "F84", sample = "Control")
+f84_none <- read.csv(file = "data/flow/Flanking/F84/F84_None_unselected_Sample(1).csv.gz") %>% mutate("flow" = "F84", sample = "None")
+f84_g718a <- read.csv(file = "data/flow/Flanking/F84/F84_G718A_hygro_Sample(4).csv.gz") %>% mutate("flow" = "F84", sample = "Flanked")
+f84_g747a <- read.csv(file = "data/flow/Flanking/F84/F84_G747A_hygro_Sample(5).csv.gz") %>% mutate("flow" = "F84", sample = "Control")
 
 flank_expt_cell_num <- 90000
 flank_red_pos_cutoff <- 5e3
 
 f84 <- rbind(f84_none[1:flank_expt_cell_num,], f84_g718a[1:flank_expt_cell_num,], f84_g747a[1:flank_expt_cell_num,])
 
-ggplot() + theme_bw() + 
-  scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) +
-  geom_point(data = f84, aes(x = YL2.A, y = BL1.A), alpha = 0.01) +
-  facet_grid(rows = vars(sample))
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) + geom_point(data = f84, aes(x = YL2.A, y = BL1.A), alpha = 0.01) + facet_grid(rows = vars(sample))
 
 f84$ratio <- f84$BL1.A / f84$YL2.A
 f84_subset <- f84 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
 f84_control_95pct_interval <- c(quantile((f84_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f84_subset %>% filter(sample == "Control"))$ratio,0.975))
 
-ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
-  geom_histogram(data = f84_subset, aes(x = ratio), binwidth = 0.01) +
-  facet_grid(rows = vars(sample)) +
-  geom_vline(xintercept  = f84_control_95pct_interval, linetype = 2)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f84_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample)) + geom_vline(xintercept  = f84_control_95pct_interval, linetype = 2)
 
 f84_fraction_unexcised <- sum((f84_subset %>% filter(sample == "Flanked"))$ratio > f84_control_95pct_interval[1])/nrow((f84_subset %>% filter(sample == "Flanked")))
 flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F84", "frac_unexcised" = f84_fraction_unexcised))
 
-
-## F101 Aria
-f101_none <- read.csv(file = "data/flow/Flanking/Aria/F101_None_001_Singlets.csv.gz") %>% mutate("flow" = "F101", sample = "None")
-f101_g718a <- read.csv(file = "data/flow/Flanking/Aria/F101_G718A_002_Singlets.csv.gz") %>% mutate("flow" = "F101", sample = "Flanked")
-f101_g747a <- read.csv(file = "data/flow/Flanking/Aria/F101_G747A_003_Singlets.csv.gz") %>% mutate("flow" = "F101", sample = "Control")
-
-flank_expt_cell_num <- 2400
-flank_red_pos_cutoff <- 5e3
-
-f101 <- rbind(f101_none[1:flank_expt_cell_num,], f101_g718a[1:flank_expt_cell_num,], f101_g747a[1:flank_expt_cell_num,])
-
-ggplot() + theme_bw() + 
-  scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) +
-  geom_point(data = f101, aes(x = G610.A, y = B515.A), alpha = 0.01) +
-  facet_grid(rows = vars(sample))
-
-f101$ratio <- f101$B515.A / f101$G610.A
-f101_subset <- f101 %>% filter(G610.A >= flank_red_pos_cutoff)
-
-f101_control_95pct_interval <- c(quantile((f101_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f101_subset %>% filter(sample == "Control"))$ratio,0.975))
-
-ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
-  geom_histogram(data = f101_subset, aes(x = ratio), binwidth = 0.01) +
-  facet_grid(rows = vars(sample)) +
-  geom_vline(xintercept  = f101_control_95pct_interval, linetype = 2)
-
-f101_fraction_unexcised <- sum((f101_subset %>% filter(sample == "Flanked"))$ratio > f101_control_95pct_interval[1])/nrow((f101_subset %>% filter(sample == "Flanked")))
-flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F101", "frac_unexcised" = f101_fraction_unexcised))
-
-
 ## F114
-f114_g718a <- read.csv(file = "data/flow/Flanking/F114_G718A_A2_Single Cells.csv.gz") %>% mutate("flow" = "F114", sample = "Flanked")
-f114_g747a <- read.csv(file = "data/flow/Flanking/F114_G747A_A3_Single Cells.csv.gz") %>% mutate("flow" = "F114", sample = "Control")
+f114_g718a <- read.csv(file = "data/flow/Flanking/F114/F114_G718A_unselected_A2.csv.gz") %>% mutate("flow" = "F114", sample = "Flanked")
+f114_g747a <- read.csv(file = "data/flow/Flanking/F114/F114_G747A_unselected_A3.csv.gz") %>% mutate("flow" = "F114", sample = "Control")
 
 flank_expt_cell_num <- 45000
 flank_red_pos_cutoff <- 3e3
 
 f114 <- rbind(f114_g718a[1:flank_expt_cell_num,], f114_g747a[1:flank_expt_cell_num,])
 
-ggplot() + theme_bw() + 
-  scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) +
-  geom_point(data = f114, aes(x = YL2.A, y = BL1.A), alpha = 0.1) +
-  facet_grid(rows = vars(sample))
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) + geom_point(data = f114, aes(x = YL2.A, y = BL1.A), alpha = 0.1) + facet_grid(rows = vars(sample))
 
 f114$ratio <- f114$BL1.A / f114$YL2.A
 f114_subset <- f114 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
 f114_control_95pct_interval <- c(quantile((f114_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f114_subset %>% filter(sample == "Control"))$ratio,0.975))
 
-ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
-  geom_histogram(data = f114_subset, aes(x = ratio), binwidth = 0.01) +
-  facet_grid(rows = vars(sample)) +
-  geom_vline(xintercept  = f114_control_95pct_interval, linetype = 2)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f114_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample)) + geom_vline(xintercept  = f114_control_95pct_interval, linetype = 2)
 
 f114_fraction_unexcised <- sum((f114_subset %>% filter(sample == "Flanked"))$ratio > f114_control_95pct_interval[1])/nrow((f114_subset %>% filter(sample == "Flanked")))
 flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F114", "frac_unexcised" = f114_fraction_unexcised))
 
 
 ## F116
-f116_g718a <- read.csv(file = "data/flow/Flanking/F116_G718A_H11_Singlets.csv.gz") %>% mutate("flow" = "F116", sample = "Flanked")
-f116_g747a <- read.csv(file = "data/flow/Flanking/F116_G747A_H12_Singlets.csv.gz") %>% mutate("flow" = "F116", sample = "Control")
+f116_g718a <- read.csv(file = "data/flow/Flanking/F116/F116_G718A_unselected_H11.csv.gz") %>% mutate("flow" = "F116", sample = "Flanked")
+f116_g747a <- read.csv(file = "data/flow/Flanking/F116/F116_G747A_unselected_H12.csv.gz") %>% mutate("flow" = "F116", sample = "Control")
 flank_expt_cell_num <- 25000
 flank_red_pos_cutoff <- 5e3
 f116 <- rbind(f116_g718a[1:flank_expt_cell_num,], f116_g747a[1:flank_expt_cell_num,])
 
-ggplot() + theme_bw() + 
-  scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) +
-  geom_point(data = f116, aes(x = YL2.A, y = BL1.A), alpha = 0.1) +
-  facet_grid(rows = vars(sample))
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) + geom_point(data = f116, aes(x = YL2.A, y = BL1.A), alpha = 0.1) + facet_grid(rows = vars(sample))
 
 f116$ratio <- f116$BL1.A / f116$YL2.A
 f116_subset <- f116 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
 f116_control_95pct_interval <- c(quantile((f116_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f116_subset %>% filter(sample == "Control"))$ratio,0.975))
 
-ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
-  geom_histogram(data = f116_subset, aes(x = ratio), binwidth = 0.01) +
-  facet_grid(rows = vars(sample)) +
-  geom_vline(xintercept  = f116_control_95pct_interval, linetype = 2)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f116_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample)) + geom_vline(xintercept  = f116_control_95pct_interval, linetype = 2)
 
 f116_fraction_unexcised <- sum((f116_subset %>% filter(sample == "Flanked"))$ratio > f116_control_95pct_interval[1])/nrow((f116_subset %>% filter(sample == "Flanked")))
 flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F116", "frac_unexcised" = f116_fraction_unexcised))
 
 
 ## F119
-f119_none <- read.csv(file = "data/flow/Flanking/F119_None_G11_Singlets.csv.gz") %>% mutate("flow" = "F119", sample = "None")
-f119_g718a <- read.csv(file = "data/flow/Flanking/F119_G718A_H11_Singlets.csv.gz") %>% mutate("flow" = "F119", sample = "Flanked")
-f119_g747a <- read.csv(file = "data/flow/Flanking/F119_G747A_H12_Singlets.csv.gz") %>% mutate("flow" = "F119", sample = "Control")
+f119_none <- read.csv(file = "data/flow/Flanking/F119/F119_none_unselected_G11.csv.gz") %>% mutate("flow" = "F119", sample = "None")
+f119_g718a <- read.csv(file = "data/flow/Flanking/F119/F119_G718A_unselected_H11.csv.gz") %>% mutate("flow" = "F119", sample = "Flanked")
+f119_g747a <- read.csv(file = "data/flow/Flanking/F119/F119_G747A_unselected_H12.csv.gz") %>% mutate("flow" = "F119", sample = "Control")
 flank_expt_cell_num <- 9000
 flank_red_pos_cutoff <- 5e3
 f119 <- rbind(f119_none[1:flank_expt_cell_num,], f119_g718a[1:flank_expt_cell_num,], f119_g747a[1:flank_expt_cell_num,]) %>% filter(!is.na(sample))
 
-ggplot() + theme_bw() + 
-  scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) +
-  geom_point(data = f119, aes(x = YL2.A, y = BL1.A), alpha = 0.1) +
-  facet_grid(rows = vars(sample))
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) + geom_point(data = f119, aes(x = YL2.A, y = BL1.A), alpha = 0.1) + facet_grid(rows = vars(sample))
 
 f119$ratio <- f119$BL1.A / f119$YL2.A
 f119_subset <- f119 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
 f119_control_95pct_interval <- c(quantile((f119_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f119_subset %>% filter(sample == "Control"))$ratio,0.975))
 
-ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
-  geom_histogram(data = f119_subset, aes(x = ratio), binwidth = 0.01) +
-  facet_grid(rows = vars(sample)) +
-  geom_vline(xintercept  = f119_control_95pct_interval, linetype = 2)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f119_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample)) + geom_vline(xintercept  = f119_control_95pct_interval, linetype = 2)
 
 f119_fraction_unexcised <- sum((f119_subset %>% filter(sample == "Flanked"))$ratio > f119_control_95pct_interval[1])/nrow((f119_subset %>% filter(sample == "Flanked")))
 flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F119", "frac_unexcised" = f119_fraction_unexcised))
 
-
 ## F130
-f130_none <- read.csv(file = "data/flow/Flanking/F130_none_D10_Singlets.csv.gz") %>% mutate("flow" = "F130", sample = "None")
-f130_g718a <- read.csv(file = "data/flow/Flanking/F130_G718A_D11_Singlets.csv.gz") %>% mutate("flow" = "F130", sample = "Flanked")
-f130_g747a <- read.csv(file = "data/flow/Flanking/F130_G747A_D12_Singlets.csv.gz") %>% mutate("flow" = "F130", sample = "Control")
+f130_none <- read.csv(file = "data/flow/Flanking/F130/F130_none_unselected_D10.csv.gz") %>% mutate("flow" = "F130", sample = "None")
+f130_g718a <- read.csv(file = "data/flow/Flanking/F130/F130_G718A_unselected_D11.csv.gz") %>% mutate("flow" = "F130", sample = "Flanked")
+f130_g747a <- read.csv(file = "data/flow/Flanking/F130/F130_G747A_unselected_D12.csv.gz") %>% mutate("flow" = "F130", sample = "Control")
 flank_expt_cell_num <- 89000
 flank_red_pos_cutoff <- 5e3
 f130 <- rbind(f130_none[1:flank_expt_cell_num,], f130_g718a[1:flank_expt_cell_num,], f130_g747a[1:flank_expt_cell_num,]) %>% filter(!is.na(sample))
 
-ggplot() + theme_bw() + 
-  scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) +
-  geom_point(data = f130, aes(x = YL2.A, y = BL1.A), alpha = 0.1) +
-  facet_grid(rows = vars(sample))
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) + geom_point(data = f130, aes(x = YL2.A, y = BL1.A), alpha = 0.1) + facet_grid(rows = vars(sample))
 
 f130$ratio <- f130$BL1.A / f130$YL2.A
 f130_subset <- f130 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
 f130_control_95pct_interval <- c(quantile((f130_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f130_subset %>% filter(sample == "Control"))$ratio,0.975))
 
-ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
-  geom_histogram(data = f130_subset, aes(x = ratio), binwidth = 0.01) +
-  facet_grid(rows = vars(sample)) +
-  geom_vline(xintercept  = f130_control_95pct_interval, linetype = 2)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f130_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample)) + geom_vline(xintercept  = f130_control_95pct_interval, linetype = 2)
 
 f130_fraction_unexcised <- sum((f130_subset %>% filter(sample == "Flanked"))$ratio > f130_control_95pct_interval[1])/nrow((f130_subset %>% filter(sample == "Flanked")))
 flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F130", "frac_unexcised" = f130_fraction_unexcised))
 
-
 ## F131
-f131_none <- read.csv(file = "data/flow/Flanking/F131_none_D4_Singlets.csv.gz") %>% mutate("flow" = "F131", sample = "None")
-f131_g718a <- read.csv(file = "data/flow/Flanking/F131_G718A_D5_Singlets.csv.gz") %>% mutate("flow" = "F131", sample = "Flanked")
-f131_g747a <- read.csv(file = "data/flow/Flanking/F131_G747A_D6_Singlets.csv.gz") %>% mutate("flow" = "F131", sample = "Control")
+f131_none <- read.csv(file = "data/flow/Flanking/F131/F131_none_unselected_D4.csv.gz") %>% mutate("flow" = "F131", sample = "None")
+f131_g718a <- read.csv(file = "data/flow/Flanking/F131/F131_G718A_unselected_D5.csv.gz") %>% mutate("flow" = "F131", sample = "Flanked")
+f131_g747a <- read.csv(file = "data/flow/Flanking/F131/F131_G747A_unselected_D6.csv.gz") %>% mutate("flow" = "F131", sample = "Control")
 flank_expt_cell_num <- 190000
 flank_red_pos_cutoff <- 3e3
 f131 <- rbind(f131_none[1:flank_expt_cell_num,], f131_g718a[1:flank_expt_cell_num,], f131_g747a[1:flank_expt_cell_num,]) %>% filter(!is.na(sample))
 
-ggplot() + theme_bw() + 
-  scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) +
-  geom_point(data = f131, aes(x = YL2.A, y = BL1.A), alpha = 0.1) +
-  facet_grid(rows = vars(sample))
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) + geom_point(data = f131, aes(x = YL2.A, y = BL1.A), alpha = 0.1) + facet_grid(rows = vars(sample))
 
 f131$ratio <- f131$BL1.A / f131$YL2.A
 f131_subset <- f131 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
 f131_control_95pct_interval <- c(quantile((f131_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f131_subset %>% filter(sample == "Control"))$ratio,0.975))
 
-ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
-  geom_histogram(data = f131_subset, aes(x = ratio), binwidth = 0.01) +
-  facet_grid(rows = vars(sample)) +
-  geom_vline(xintercept  = f131_control_95pct_interval, linetype = 2)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f131_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample)) + geom_vline(xintercept  = f131_control_95pct_interval, linetype = 2)
 
 f131_fraction_unexcised <- sum((f131_subset %>% filter(sample == "Flanked"))$ratio > f131_control_95pct_interval[1])/nrow((f131_subset %>% filter(sample == "Flanked")))
 flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F131", "frac_unexcised" = f131_fraction_unexcised))
 
-
 ## F132
-f132_g718a <- read.csv(file = "data/flow/Flanking/F132_G718A_G12_Singlets.csv.gz") %>% mutate("flow" = "F132", sample = "Flanked")
-f132_g747a <- read.csv(file = "data/flow/Flanking/F132_G747A_H1_Singlets.csv.gz") %>% mutate("flow" = "F132", sample = "Control")
+f132_g718a <- read.csv(file = "data/flow/Flanking/F132/F132_G718A_unselected_G12.csv.gz") %>% mutate("flow" = "F132", sample = "Flanked")
+f132_g747a <- read.csv(file = "data/flow/Flanking/F132/F132_G747A_unselected_H1.csv.gz") %>% mutate("flow" = "F132", sample = "Control")
 flank_expt_cell_num <- 180000
 flank_red_pos_cutoff <- 3e3
 f132 <- rbind(f132_g718a[1:flank_expt_cell_num,], f132_g747a[1:flank_expt_cell_num,])
 
-ggplot() + theme_bw() + 
-  scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) +
-  geom_point(data = f132, aes(x = YL2.A, y = BL1.A), alpha = 0.1) +
-  facet_grid(rows = vars(sample))
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) + geom_point(data = f132, aes(x = YL2.A, y = BL1.A), alpha = 0.1) + facet_grid(rows = vars(sample))
 
 f132$ratio <- f132$BL1.A / f132$YL2.A
 f132_subset <- f132 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
 f132_control_95pct_interval <- c(quantile((f132_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f132_subset %>% filter(sample == "Control"))$ratio,0.975))
 
-ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
-  geom_histogram(data = f132_subset, aes(x = ratio), binwidth = 0.01) +
-  facet_grid(rows = vars(sample)) +
-  geom_vline(xintercept  = f132_control_95pct_interval, linetype = 2)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f132_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample)) + geom_vline(xintercept  = f132_control_95pct_interval, linetype = 2)
 
 f132_fraction_unexcised <- sum((f132_subset %>% filter(sample == "Flanked"))$ratio > f132_control_95pct_interval[1])/nrow((f132_subset %>% filter(sample == "Flanked")))
 flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F132", "frac_unexcised" = f132_fraction_unexcised))
 
-
 ## f280
-f280_g718a <- read.csv(file = "data/flow/Flanking/F280_G718A unselected.csv.gz") %>% mutate("flow" = "f280", sample = "Flanked")
-f280_g747a <- read.csv(file = "data/flow/Flanking/F280_G747A_unselected.csv.gz") %>% mutate("flow" = "f280", sample = "Control")
+f280_g718a <- read.csv(file = "data/flow/Flanking/F280/F280_G718A_unselected.csv.gz") %>% mutate("flow" = "F280", sample = "Flanked")
+f280_g747a <- read.csv(file = "data/flow/Flanking/F280/F280_G747A_unselected.csv.gz") %>% mutate("flow" = "F280", sample = "Control")
 flank_expt_cell_num <- 180000
 flank_red_pos_cutoff <- 3e3
 f280 <- rbind(f280_g718a[1:flank_expt_cell_num,], f280_g747a[1:flank_expt_cell_num,])
 
-ggplot() + theme_bw() + 
-  scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
-  geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) +
-  geom_point(data = f280, aes(x = YL2.A, y = BL1.A), alpha = 0.1) +
-  facet_grid(rows = vars(sample))
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) + geom_point(data = f280, aes(x = YL2.A, y = BL1.A), alpha = 0.1) + facet_grid(rows = vars(sample))
 
 f280$ratio <- f280$BL1.A / f280$YL2.A
 f280_subset <- f280 %>% filter(YL2.A >= flank_red_pos_cutoff)
 
 f280_control_95pct_interval <- c(quantile((f280_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f280_subset %>% filter(sample == "Control"))$ratio,0.975))
 
-ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
-  geom_histogram(data = f280_subset, aes(x = ratio), binwidth = 0.01) +
-  facet_grid(rows = vars(sample)) +
-  geom_vline(xintercept  = f280_control_95pct_interval, linetype = 2)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f280_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample)) + geom_vline(xintercept  = f280_control_95pct_interval, linetype = 2)
 
 f280_fraction_unexcised <- sum((f280_subset %>% filter(sample == "Flanked"))$ratio > f280_control_95pct_interval[1])/nrow((f280_subset %>% filter(sample == "Flanked")))
-flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "f280", "frac_unexcised" = f280_fraction_unexcised))
+flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F280", "frac_unexcised" = f280_fraction_unexcised))
+
+
+## f281
+f281_g718a <- read.csv(file = "data/flow/Flanking/F281/F281_G718A_unselected_A1.csv.gz") %>% mutate("flow" = "F281", sample = "Flanked")
+f281_g747a <- read.csv(file = "data/flow/Flanking/F281/F281_G747A_unselected_A2.csv.gz") %>% mutate("flow" = "F281", sample = "Control")
+flank_expt_cell_num <- 310000
+flank_red_pos_cutoff <- 3e3
+f281 <- rbind(f281_g718a[1:flank_expt_cell_num,], f281_g747a[1:flank_expt_cell_num,])
+
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) + geom_point(data = f281, aes(x = YL2.A, y = BL1.A), alpha = 0.1) + facet_grid(rows = vars(sample))
+
+f281$ratio <- f281$BL1.A / f281$YL2.A
+f281_subset <- f281 %>% filter(YL2.A >= flank_red_pos_cutoff)
+
+f281_control_95pct_interval <- c(quantile((f281_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f281_subset %>% filter(sample == "Control"))$ratio,0.975))
+
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f281_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample)) + geom_vline(xintercept  = f281_control_95pct_interval, linetype = 2)
+
+f281_fraction_unexcised <- sum((f281_subset %>% filter(sample == "Flanked"))$ratio > f281_control_95pct_interval[1])/nrow((f281_subset %>% filter(sample == "Flanked")))
+flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F281", "frac_unexcised" = f281_fraction_unexcised))
+
+
+## f281b
+f281b_g718a <- read.csv(file = "data/flow/Flanking/F281/F281b_G718A_unselected_A3.csv.gz") %>% mutate("flow" = "F281b", sample = "Flanked")
+flank_expt_cell_num <- 230000
+flank_red_pos_cutoff <- 3e3
+f281b <- rbind(f281b_g718a[1:flank_expt_cell_num,], f281_g747a[1:flank_expt_cell_num,])
+
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) + geom_point(data = f281b, aes(x = YL2.A, y = BL1.A), alpha = 0.1) + facet_grid(rows = vars(sample))
+
+f281b$ratio <- f281b$BL1.A / f281b$YL2.A
+f281b_subset <- f281b %>% filter(YL2.A >= flank_red_pos_cutoff)
+
+f281b_control_95pct_interval <- c(quantile((f281b_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f281b_subset %>% filter(sample == "Control"))$ratio,0.975))
+
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f281b_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample)) + geom_vline(xintercept  = f281b_control_95pct_interval, linetype = 2)
+
+f281b_fraction_unexcised <- sum((f281b_subset %>% filter(sample == "Flanked"))$ratio > f281b_control_95pct_interval[1])/nrow((f281b_subset %>% filter(sample == "Flanked")))
+flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F281b", "frac_unexcised" = f281b_fraction_unexcised))
+
+
+## f282
+f282_g718a <- read.csv(file = "data/flow/Flanking/F282/F282_G718A_unselected_A1.csv.gz") %>% mutate("flow" = "F282", sample = "Flanked")
+f282_g747a <- read.csv(file = "data/flow/Flanking/F282/F282_G747A_unselected_A2.csv.gz") %>% mutate("flow" = "F282", sample = "Control")
+flank_expt_cell_num <- 280000
+flank_red_pos_cutoff <- 3e3
+f282 <- rbind(f282_g718a[1:flank_expt_cell_num,], f282_g747a[1:flank_expt_cell_num,])
+
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) + geom_point(data = f282, aes(x = YL2.A, y = BL1.A), alpha = 0.1) + facet_grid(rows = vars(sample))
+
+f282$ratio <- f282$BL1.A / f282$YL2.A
+f282_subset <- f282 %>% filter(YL2.A >= flank_red_pos_cutoff)
+
+f282_control_95pct_interval <- c(quantile((f282_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f282_subset %>% filter(sample == "Control"))$ratio,0.975))
+
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f282_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample), scales="free_y") + geom_vline(xintercept  = f282_control_95pct_interval, linetype = 2)
+
+f282_fraction_unexcised <- sum((f282_subset %>% filter(sample == "Flanked"))$ratio > f282_control_95pct_interval[1])/nrow((f282_subset %>% filter(sample == "Flanked")))
+flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F282", "frac_unexcised" = f282_fraction_unexcised))
+
+
+## f282b
+f282b_g718a <- read.csv(file = "data/flow/Flanking/F282/F282b_G718A_unselected_A3.csv.gz") %>% mutate("flow" = "F282b", sample = "Flanked")
+flank_expt_cell_num <- 930000
+flank_red_pos_cutoff <- 3e3
+f282b <- rbind(f282b_g718a[1:flank_expt_cell_num,], f282_g747a[1:flank_expt_cell_num,])
+
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) + geom_point(data = f282b, aes(x = YL2.A, y = BL1.A), alpha = 0.1) + facet_grid(rows = vars(sample))
+
+f282b$ratio <- f282b$BL1.A / f282b$YL2.A
+f282b_subset <- f282b %>% filter(YL2.A >= flank_red_pos_cutoff)
+
+f282b_control_95pct_interval <- c(quantile((f282b_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f282b_subset %>% filter(sample == "Control"))$ratio,0.975))
+
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f282b_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample), scales="free_y") + geom_vline(xintercept  = f282b_control_95pct_interval, linetype = 2)
+
+f282b_fraction_unexcised <- sum((f282b_subset %>% filter(sample == "Flanked"))$ratio > f282b_control_95pct_interval[1])/nrow((f282b_subset %>% filter(sample == "Flanked")))
+flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F282b", "frac_unexcised" = f282b_fraction_unexcised))
+
+
+## f283
+f283_g718a <- read.csv(file = "data/flow/Flanking/F283/F283_G718A_unselected_A1.csv.gz") %>% mutate("flow" = "F283", sample = "Flanked")
+f283_g747a <- read.csv(file = "data/flow/Flanking/F283/F283_G747A_unselected_A2.csv.gz") %>% mutate("flow" = "F283", sample = "Control")
+flank_expt_cell_num <- 305000
+flank_red_pos_cutoff <- 3e3
+f283 <- rbind(f283_g718a[1:flank_expt_cell_num,], f283_g747a[1:flank_expt_cell_num,])
+
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) +geom_point(data = f283, aes(x = YL2.A, y = BL1.A), alpha = 0.1) +facet_grid(rows = vars(sample))
+
+f283$ratio <- f283$BL1.A / f283$YL2.A
+f283_subset <- f283 %>% filter(YL2.A >= flank_red_pos_cutoff)
+
+f283_control_95pct_interval <- c(quantile((f283_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f283_subset %>% filter(sample == "Control"))$ratio,0.975))
+
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f283_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample), scales="free_y") + geom_vline(xintercept  = f283_control_95pct_interval, linetype = 2)
+
+f283_fraction_unexcised <- sum((f283_subset %>% filter(sample == "Flanked"))$ratio > f283_control_95pct_interval[1])/nrow((f283_subset %>% filter(sample == "Flanked")))
+flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F283", "frac_unexcised" = f283_fraction_unexcised))
+
+
+## f283b
+f283b_g718a <- read.csv(file = "data/flow/Flanking/F283/F283b_G718A_unselected_A3.csv.gz") %>% mutate("flow" = "F283b", sample = "Flanked")
+flank_expt_cell_num <- 80000
+flank_red_pos_cutoff <- 3e3
+f283b <- rbind(f283b_g718a[1:flank_expt_cell_num,], f283_g747a[1:flank_expt_cell_num,])
+
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) + geom_point(data = f283b, aes(x = YL2.A, y = BL1.A), alpha = 0.1) + facet_grid(rows = vars(sample))
+
+f283b$ratio <- f283b$BL1.A / f283b$YL2.A
+f283b_subset <- f283b %>% filter(YL2.A >= flank_red_pos_cutoff)
+
+f283b_control_95pct_interval <- c(quantile((f283b_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f283b_subset %>% filter(sample == "Control"))$ratio,0.975))
+
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f283b_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample), scales="free_y") + geom_vline(xintercept  = f283b_control_95pct_interval, linetype = 2)
+
+f283b_fraction_unexcised <- sum((f283b_subset %>% filter(sample == "Flanked"))$ratio > f283b_control_95pct_interval[1])/nrow((f283b_subset %>% filter(sample == "Flanked")))
+flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F283b", "frac_unexcised" = f283b_fraction_unexcised))
 ```
+
+
 
 
 ```{r Flanking data - Flow Cyometry}
@@ -1002,19 +992,40 @@ F131_example_scatterplot <- ggplot() + theme(panel.grid.minor = element_blank())
 ggsave(file = "plots/Flanking_example_scatterplot.pdf", F131_example_scatterplot, height = 1.6, width = 4.5)
 F131_example_scatterplot
 
+f131_example <- rbind(f131_none[1:194000,], f131_g718a[1:194000,], f131_g747a[1:194000,]) %>% filter(!is.na(sample))
+f131_example$sample <- factor(f131_example$sample, levels = c("None", "Flanked", "Control"))
+f131_example$ratio <- f131_example$BL1.A / f131_example$YL2.A
+f131_example_subset <- f131_example %>% filter(YL2.A >= flank_red_pos_cutoff & sample != "None")
+
+f131_example_control_95pct_interval <- c(quantile((f131_example_subset %>% filter(sample == "Control"))$ratio,0.05))
+
+F131_ratio_histogram <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), panel.grid.major.y = element_blank()) + 
+  labs(x = "Green / Red ratio", y = "Number\nof cells") +
+  scale_x_continuous(limits = c(-0.05, 0.5), breaks = c(0,0.2,0.4)) + scale_y_continuous(breaks = c(0,100)) +
+  geom_histogram(data = f131_example_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample)) + geom_vline(xintercept  = f131_example_control_95pct_interval, linetype = 2)
+ggsave(file = "Plots/F131_ratio_histogram.pdf", F131_ratio_histogram, height = 1.4, width = 1.8)
+F131_ratio_histogram
+
+```
+
+
+```{r Flanking data - Flow Cyometry}
 ## Looking at fraction excised over time
 flanking_flow_days <- read.csv(file = "data/Flanking_expt_timepoints.csv", header = T, stringsAsFactors = F)
 flanking_flow_df2 <- merge(flanking_flow_df, flanking_flow_days, by = "flow")
 
-Flanking_timeplot <- ggplot() + theme(panel.grid.minor = element_blank()) + 
+flanking_flow_df2$replicate <- as.factor(flanking_flow_df2$replicate)
+
+Flanking_timeplot <- ggplot() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_y_log10(limits = c(0.001,1)) + scale_x_log10() +
   labs(x = "Days after\ntransfection", y = "Fraction of\ncells unexcised") +
-  geom_point(data = flanking_flow_df2 %>% filter(instrument == "Attune"), aes(x = days, y = frac_unexcised))
+  geom_point(data = flanking_flow_df2 %>% filter(instrument == "Attune"), aes(x = days, y = frac_unexcised, color = replicate), color = "red")
 ggsave(file = "plots/Flanking_timeplot.pdf", Flanking_timeplot, height = 1.6, width = 2)
 Flanking_timeplot
 
+
 ## Looking at the reproducibility of recombination
-flank_indep_recombs <- flanking_flow_df2 %>% group_by(replicate) %>% summarize(frac_unexcised = 10^mean(log10(frac_unexcised)))
+flank_indep_recombs <- flanking_flow_df2 %>% filter(frac_unexcised != 0) %>% group_by(replicate) %>% summarize(frac_unexcised = 10^mean(log10(frac_unexcised)))
 flank_flow_geomean <- 10^mean(log10(flank_indep_recombs$frac_unexcised))
 flank_flow_upper_conf <- 10^(mean(log10(flank_indep_recombs$frac_unexcised)) + (sd(log10(flank_indep_recombs$frac_unexcised))/sqrt(nrow(flank_indep_recombs)) * 1.96))
 flank_flow_lower_conf <- 10^(mean(log10(flank_indep_recombs$frac_unexcised)) - (sd(log10(flank_indep_recombs$frac_unexcised))/sqrt(nrow(flank_indep_recombs)) * 1.96))
@@ -1022,12 +1033,200 @@ flank_flow_lower_conf <- 10^(mean(log10(flank_indep_recombs$frac_unexcised)) - (
 Repeated_excisions_plot <- ggplot() + theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank()) + 
   labs(x = NULL, y = "Fraction of cells unexcised") + 
   scale_y_log10(limits = c(0.001,1)) + #scale_x_continuous(limits = c(-0.1,0.1)) +
-  geom_point(data = flank_indep_recombs, aes(x = 0, y = frac_unexcised), alpha = 0.5) +
-  geom_point(aes(x = 0, y = flank_flow_geomean), shape = 95, size = 10) +
-  geom_errorbar(aes(x = 0, ymax = flank_flow_upper_conf, ymin = flank_flow_lower_conf), width = 0.01)
+  geom_point(data = flank_indep_recombs, aes(x = 0, y = frac_unexcised), alpha = 0.5, color = "Red") +
+  geom_point(aes(x = 0, y = flank_flow_geomean), shape = 95, size = 10, color = "Black") +
+  geom_errorbar(aes(x = 0, ymax = flank_flow_upper_conf, ymin = flank_flow_lower_conf), width = 0.01, alpha = 0.4)
 ggsave(file = "plots/Repeated_excisions_plot.pdf", Repeated_excisions_plot, height = 1.1, width = 1)
 Repeated_excisions_plot
 ```
+
+```{r Effect of adding AP1903 to flanking recombinations}
+## f280
+f280_g718a <- read.csv(file = "data/flow/Flanking/F280/F280_G718A_unselected.csv.gz") %>% mutate("flow" = "F280", sample = "Flanked", treatment = "none")
+f280_g747a <- read.csv(file = "data/flow/Flanking/F280/F280_G747A_unselected.csv.gz") %>% mutate("flow" = "F280", sample = "Control", treatment = "none")
+f280_g718a_ap1903 <- read.csv(file = "data/flow/Flanking/F280/F280_G718A_AP1903.csv.gz") %>% mutate("flow" = "F280", sample = "Flanked", treatment = "AP1903")
+f280_g747a_ap1903 <- read.csv(file = "data/flow/Flanking/F280/F280_G747A_AP1903.csv.gz") %>% mutate("flow" = "F280", sample = "Control", treatment = "AP1903")
+flank_expt_cell_num <- 374000
+flank_red_pos_cutoff <- 3e3
+f280 <- rbind(f280_g718a[1:flank_expt_cell_num,], f280_g747a[1:flank_expt_cell_num,], f280_g718a_ap1903[1:flank_expt_cell_num,], f280_g747a_ap1903[1:flank_expt_cell_num,])
+#ggplot() + theme_bw() + scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) + geom_point(data = f280, aes(x = YL2.A, y = BL1.A), alpha = 0.1) + facet_grid(rows = vars(sample))
+f280$ratio <- f280$BL1.A / f280$YL2.A
+f280_subset <- f280 %>% filter(YL2.A >= flank_red_pos_cutoff)
+f280_control_95pct_interval <- c(quantile((f280_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f280_subset %>% filter(sample == "Control"))$ratio,0.975))
+f280_subset$label <- paste0(f280_subset$sample,"_",f280_subset$treatment)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f280_subset, aes(x = ratio), binwidth = 0.01) + facet_wrap(~label, scales = "free_y") + geom_vline(xintercept  = f280_control_95pct_interval, linetype = 2)
+f280_subset_summary1 <- f280_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f280_control_95pct_interval))
+f280_subset_summary2 <- f280_subset %>% group_by(label) %>% count()
+f280_subset_summary <- merge(f280_subset_summary1, f280_subset_summary2, by = "label")
+f280_subset_summary$frac_unexcised <- f280_subset_summary$unexcised / f280_subset_summary$n
+f280_subset_summary$rep <- "F280"
+
+## F281
+f281_g718a <- read.csv(file = "data/flow/Flanking/F281/F281_G718A_unselected_A1.csv.gz") %>% mutate("flow" = "F281", sample = "Flanked", treatment = "none")
+f281_g747a <- read.csv(file = "data/flow/Flanking/F281/F281_G747A_unselected_A2.csv.gz") %>% mutate("flow" = "F281", sample = "Control", treatment = "none")
+f281_g718a_ap1903 <- read.csv(file = "data/flow/Flanking/F281/F281_G718A_AP1903_B1.csv.gz") %>% mutate("flow" = "F281", sample = "Flanked", treatment = "AP1903")
+f281_g747a_ap1903 <- read.csv(file = "data/flow/Flanking/F281/F281_G747A_AP1903_B2.csv.gz") %>% mutate("flow" = "F281", sample = "Control", treatment = "AP1903")
+flank_expt_cell_num <- 287000
+flank_red_pos_cutoff <- 3e3
+f281 <- rbind(f281_g718a[1:flank_expt_cell_num,], f281_g747a[1:flank_expt_cell_num,], f281_g718a_ap1903[1:flank_expt_cell_num,], f281_g747a_ap1903[1:flank_expt_cell_num,])
+f281$ratio <- f281$BL1.A / f281$YL2.A
+f281_subset <- f281 %>% filter(YL2.A >= flank_red_pos_cutoff)
+f281_control_95pct_interval <- c(quantile((f281_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f281_subset %>% filter(sample == "Control"))$ratio,0.975))
+f281_subset$label <- paste0(f281_subset$sample,"_",f281_subset$treatment)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f281_subset, aes(x = ratio), binwidth = 0.01) + facet_wrap(~label, scales = "free_y") + geom_vline(xintercept  = f281_control_95pct_interval, linetype = 2)
+f281_subset_summary1 <- f281_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f281_control_95pct_interval))
+f281_subset_summary2 <- f281_subset %>% group_by(label) %>% count()
+f281_subset_summary <- merge(f281_subset_summary1, f281_subset_summary2, by = "label")
+f281_subset_summary$frac_unexcised <- f281_subset_summary$unexcised / f281_subset_summary$n
+f281_subset_summary$rep <- "F281"
+
+## F281b
+f281b_g718a <- read.csv(file = "data/flow/Flanking/F281/F281b_G718A_unselected_A3.csv.gz") %>% mutate("flow" = "F281b", sample = "Flanked", treatment = "none")
+f281b_g747a <- read.csv(file = "data/flow/Flanking/F281/F281b_G747A_unselected_A4.csv.gz") %>% mutate("flow" = "F281b", sample = "Control", treatment = "none")
+f281b_g718a_ap1903 <- read.csv(file = "data/flow/Flanking/F281/F281b_G718A_AP1903_B3.csv.gz") %>% mutate("flow" = "F281b", sample = "Flanked", treatment = "AP1903")
+f281b_g747a_ap1903 <- read.csv(file = "data/flow/Flanking/F281/F281b_G747A_AP1903_B4.csv.gz") %>% mutate("flow" = "F281b", sample = "Control", treatment = "AP1903")
+flank_expt_cell_num <- 157000
+flank_red_pos_cutoff <- 3e3
+f281b <- rbind(f281b_g718a[1:flank_expt_cell_num,], f281b_g747a[1:flank_expt_cell_num,], f281b_g718a_ap1903[1:flank_expt_cell_num,], f281b_g747a_ap1903[1:flank_expt_cell_num,])
+f281b$ratio <- f281b$BL1.A / f281b$YL2.A
+f281b_subset <- f281b %>% filter(YL2.A >= flank_red_pos_cutoff)
+f281b_control_95pct_interval <- c(quantile((f281b_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f281b_subset %>% filter(sample == "Control"))$ratio,0.975))
+f281b_subset$label <- paste0(f281b_subset$sample,"_",f281b_subset$treatment)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f281b_subset, aes(x = ratio), binwidth = 0.01) + facet_wrap(~label, scales = "free_y") + geom_vline(xintercept  = f281b_control_95pct_interval, linetype = 2)
+f281b_subset_summary1 <- f281b_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f281b_control_95pct_interval))
+f281b_subset_summary2 <- f281b_subset %>% group_by(label) %>% count()
+f281b_subset_summary <- merge(f281b_subset_summary1, f281b_subset_summary2, by = "label")
+f281b_subset_summary$frac_unexcised <- f281b_subset_summary$unexcised / f281b_subset_summary$n
+f281b_subset_summary$rep <- "F281b"
+
+
+## F282
+f282_g718a <- read.csv(file = "data/flow/Flanking/F282/F282_G718A_unselected_A1.csv.gz") %>% mutate("flow" = "F282", sample = "Flanked", treatment = "none")
+f282_g747a <- read.csv(file = "data/flow/Flanking/F282/F282_G747A_unselected_A2.csv.gz") %>% mutate("flow" = "F282", sample = "Control", treatment = "none")
+f282_g718a_ap1903 <- read.csv(file = "data/flow/Flanking/F282/F282_G718A_AP1903_B1.csv.gz") %>% mutate("flow" = "F282", sample = "Flanked", treatment = "AP1903")
+f282_g747a_ap1903 <- read.csv(file = "data/flow/Flanking/F282/F282_G747A_AP1903_B2.csv.gz") %>% mutate("flow" = "F282", sample = "Control", treatment = "AP1903")
+flank_expt_cell_num <- 190000
+flank_red_pos_cutoff <- 3e3
+f282 <- rbind(f282_g718a[1:flank_expt_cell_num,], f282_g747a[1:flank_expt_cell_num,], f282_g718a_ap1903[1:flank_expt_cell_num,], f282_g747a_ap1903[1:flank_expt_cell_num,])
+f282$ratio <- f282$BL1.A / f282$YL2.A
+f282_subset <- f282 %>% filter(YL2.A >= flank_red_pos_cutoff)
+f282_control_95pct_interval <- c(quantile((f282_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f282_subset %>% filter(sample == "Control"))$ratio,0.975))
+f282_subset$label <- paste0(f282_subset$sample,"_",f282_subset$treatment)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f282_subset, aes(x = ratio), binwidth = 0.01) + facet_wrap(~label, scales = "free_y") + geom_vline(xintercept  = f282_control_95pct_interval, linetype = 2)
+f282_subset_summary1 <- f282_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f282_control_95pct_interval))
+f282_subset_summary2 <- f282_subset %>% group_by(label) %>% count()
+f282_subset_summary <- merge(f282_subset_summary1, f282_subset_summary2, by = "label")
+f282_subset_summary$frac_unexcised <- f282_subset_summary$unexcised / f282_subset_summary$n
+f282_subset_summary$rep <- "F282"
+
+## F282b
+f282b_g718a <- read.csv(file = "data/flow/Flanking/F282/F282b_G718A_unselected_A3.csv.gz") %>% mutate("flow" = "F282b", sample = "Flanked", treatment = "none")
+f282b_g747a <- read.csv(file = "data/flow/Flanking/F282/F282b_G747A_unselected_A4.csv.gz") %>% mutate("flow" = "F282b", sample = "Control", treatment = "none")
+f282b_g718a_ap1903 <- read.csv(file = "data/flow/Flanking/F282/F282b_G718A_AP1903_B3.csv.gz") %>% mutate("flow" = "F282b", sample = "Flanked", treatment = "AP1903")
+f282b_g747a_ap1903 <- read.csv(file = "data/flow/Flanking/F282/F282b_G747A_AP1903_B4.csv.gz") %>% mutate("flow" = "F282b", sample = "Control", treatment = "AP1903")
+flank_expt_cell_num <- 93000
+flank_red_pos_cutoff <- 3e3
+f282b <- rbind(f282b_g718a[1:flank_expt_cell_num,], f282b_g747a[1:flank_expt_cell_num,], f282b_g718a_ap1903[1:flank_expt_cell_num,], f282b_g747a_ap1903[1:flank_expt_cell_num,])
+f282b$ratio <- f282b$BL1.A / f282b$YL2.A
+f282b_subset <- f282b %>% filter(YL2.A >= flank_red_pos_cutoff)
+f282b_control_95pct_interval <- c(quantile((f282b_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f282b_subset %>% filter(sample == "Control"))$ratio,0.975))
+f282b_subset$label <- paste0(f282b_subset$sample,"_",f282b_subset$treatment)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f282b_subset, aes(x = ratio), binwidth = 0.01) + facet_wrap(~label, scales = "free_y") + geom_vline(xintercept  = f282b_control_95pct_interval, linetype = 2)
+f282b_subset_summary1 <- f282b_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f282b_control_95pct_interval))
+f282b_subset_summary2 <- f282b_subset %>% group_by(label) %>% count()
+f282b_subset_summary <- merge(f282b_subset_summary1, f282b_subset_summary2, by = "label")
+f282b_subset_summary$frac_unexcised <- f282b_subset_summary$unexcised / f282b_subset_summary$n
+f282b_subset_summary$rep <- "F282b"
+
+
+## F283
+f283_g718a <- read.csv(file = "data/flow/Flanking/F283/F283_G718A_unselected_A1.csv.gz") %>% mutate("flow" = "F283", sample = "Flanked", treatment = "none")
+f283_g747a <- read.csv(file = "data/flow/Flanking/F283/F283_G747A_unselected_A2.csv.gz") %>% mutate("flow" = "F283", sample = "Control", treatment = "none")
+f283_g718a_ap1903 <- read.csv(file = "data/flow/Flanking/F283/F283_G718A_AP1903_B1.csv.gz") %>% mutate("flow" = "F283", sample = "Flanked", treatment = "AP1903")
+f283_g747a_ap1903 <- read.csv(file = "data/flow/Flanking/F283/F283_G747A_AP1903_B2.csv.gz") %>% mutate("flow" = "F283", sample = "Control", treatment = "AP1903")
+flank_expt_cell_num <- 245000
+flank_red_pos_cutoff <- 3e3
+f283 <- rbind(f283_g718a[1:flank_expt_cell_num,], f283_g747a[1:flank_expt_cell_num,], f283_g718a_ap1903[1:flank_expt_cell_num,], f283_g747a_ap1903[1:flank_expt_cell_num,])
+f283$ratio <- f283$BL1.A / f283$YL2.A
+f283_subset <- f283 %>% filter(YL2.A >= flank_red_pos_cutoff)
+f283_control_95pct_interval <- c(quantile((f283_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f283_subset %>% filter(sample == "Control"))$ratio,0.975))
+f283_subset$label <- paste0(f283_subset$sample,"_",f283_subset$treatment)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f283_subset, aes(x = ratio), binwidth = 0.01) + facet_wrap(~label, scales = "free_y") + geom_vline(xintercept  = f283_control_95pct_interval, linetype = 2)
+f283_subset_summary1 <- f283_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f283_control_95pct_interval))
+f283_subset_summary2 <- f283_subset %>% group_by(label) %>% count()
+f283_subset_summary <- merge(f283_subset_summary1, f283_subset_summary2, by = "label")
+f283_subset_summary$frac_unexcised <- f283_subset_summary$unexcised / f283_subset_summary$n
+f283_subset_summary$rep <- "F283"
+
+## F283b
+f283b_g718a <- read.csv(file = "data/flow/Flanking/F283/F283b_G718A_unselected_A3.csv.gz") %>% mutate("flow" = "F283b", sample = "Flanked", treatment = "none")
+f283b_g747a <- read.csv(file = "data/flow/Flanking/F283/F283b_G747A_unselected_A4.csv.gz") %>% mutate("flow" = "F283b", sample = "Control", treatment = "none")
+f283b_g718a_ap1903 <- read.csv(file = "data/flow/Flanking/F283/F283b_G718A_AP1903_B3.csv.gz") %>% mutate("flow" = "F283b", sample = "Flanked", treatment = "AP1903")
+f283b_g747a_ap1903 <- read.csv(file = "data/flow/Flanking/F283/F283b_G747A_AP1903_B4.csv.gz") %>% mutate("flow" = "F283b", sample = "Control", treatment = "AP1903")
+flank_expt_cell_num <- 83000
+flank_red_pos_cutoff <- 3e3
+f283b <- rbind(f283b_g718a[1:flank_expt_cell_num,], f283b_g747a[1:flank_expt_cell_num,], f283b_g718a_ap1903[1:flank_expt_cell_num,], f283b_g747a_ap1903[1:flank_expt_cell_num,])
+f283b$ratio <- f283b$BL1.A / f283b$YL2.A
+f283b_subset <- f283b %>% filter(YL2.A >= flank_red_pos_cutoff)
+f283b_control_95pct_interval <- c(quantile((f283b_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f283b_subset %>% filter(sample == "Control"))$ratio,0.975))
+f283b_subset$label <- paste0(f283b_subset$sample,"_",f283b_subset$treatment)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f283b_subset, aes(x = ratio), binwidth = 0.01) + facet_wrap(~label, scales = "free_y") + geom_vline(xintercept  = f283b_control_95pct_interval, linetype = 2)
+f283b_subset_summary1 <- f283b_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f283b_control_95pct_interval))
+f283b_subset_summary2 <- f283b_subset %>% group_by(label) %>% count()
+f283b_subset_summary <- merge(f283b_subset_summary1, f283b_subset_summary2, by = "label")
+f283b_subset_summary$frac_unexcised <- f283b_subset_summary$unexcised / f283b_subset_summary$n
+f283b_subset_summary$rep <- "F283b"
+
+flank_ap1903_summary <- rbind(f280_subset_summary, f281_subset_summary, f281b_subset_summary, f282_subset_summary, f282b_subset_summary, f283_subset_summary, f283b_subset_summary)
+
+flank_ap1903_summary2 <- flank_ap1903_summary %>% group_by(label) %>% summarize(geomean = 10^mean(log10(frac_unexcised)))
+
+flank_ap1903_summary$label <- factor(flank_ap1903_summary$label, levels = c("Control_none", "Control_AP1903", "Flanked_none", "Flanked_AP1903"))
+flank_ap1903_summary2$label <- factor(flank_ap1903_summary2$label, levels = c("Control_none", "Control_AP1903", "Flanked_none", "Flanked_AP1903"))
+
+library(ggbeeswarm)
+
+Flanking_AP1903_plot <- ggplot() + theme(panel.grid.major.x = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) + 
+  scale_y_log10(breaks = c(0.01,0.1,1)) + 
+  labs(x = NULL, y = "Fraction of cells\nunexcised") + 
+  geom_beeswarm(data = flank_ap1903_summary, aes(x = label, y = frac_unexcised), color = "red", alpha = 0.5, size = 1) +
+  geom_point(data = flank_ap1903_summary2, aes(x = label, y = geomean), shape = 95, size = 10, color = "Black") +
+  NULL
+ggsave(file = "plots/Flanking_AP1903_plot.pdf", Flanking_AP1903_plot, height = 1.5, width = 2)
+Flanking_AP1903_plot
+
+```
+
+```{r Now including Hygro}
+## F283
+f283_g718a <- read.csv(file = "data/flow/Flanking/F283/F283_G718A_unselected_A1.csv.gz") %>% mutate("flow" = "F283", sample = "Flanked", treatment = "none")
+f283_g747a <- read.csv(file = "data/flow/Flanking/F283/F283_G747A_unselected_A2.csv.gz") %>% mutate("flow" = "F283", sample = "Control", treatment = "none")
+f283_g718a_ap1903 <- read.csv(file = "data/flow/Flanking/F283/F283_G718A_AP1903_B1.csv.gz") %>% mutate("flow" = "F283", sample = "Flanked", treatment = "AP1903")
+f283_g747a_ap1903 <- read.csv(file = "data/flow/Flanking/F283/F283_G747A_AP1903_B2.csv.gz") %>% mutate("flow" = "F283", sample = "Control", treatment = "AP1903")
+f283_g718a_hygro <- read.csv(file = "data/flow/Flanking/F283/F283_G718A_Hygro_C1.csv.gz") %>% mutate("flow" = "F283b", sample = "Flanked", treatment = "Hygro")
+f283_g747a_hygro <- read.csv(file = "data/flow/Flanking/F283/F283_G747A_Hygro_C2.csv.gz") %>% mutate("flow" = "F283b", sample = "Control", treatment = "Hygro")
+flank_expt_cell_num <- 12000
+flank_red_pos_cutoff <- 3e3
+f283 <- rbind(f283_g718a[1:flank_expt_cell_num,], f283_g747a[1:flank_expt_cell_num,], f283_g718a_ap1903[1:flank_expt_cell_num,], f283_g747a_ap1903[1:flank_expt_cell_num,], f283_g718a_hygro[1:flank_expt_cell_num,], f283_g747a_hygro[1:flank_expt_cell_num,])
+f283$ratio <- f283$BL1.A / f283$YL2.A
+f283_subset <- f283 %>% filter(YL2.A >= flank_red_pos_cutoff)
+f283_control_95pct_interval <- c(quantile((f283_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f283_subset %>% filter(sample == "Control"))$ratio,0.975))
+f283_subset$label <- paste0(f283_subset$sample,"_",f283_subset$treatment)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f283_subset, aes(x = ratio), binwidth = 0.01) + facet_wrap(~label, scales = "free_y") + geom_vline(xintercept  = f283_control_95pct_interval, linetype = 2)
+f283_subset_summary1 <- f283_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f283_control_95pct_interval))
+f283_subset_summary2 <- f283_subset %>% group_by(label) %>% count()
+f283_subset_summary <- merge(f283_subset_summary1, f283_subset_summary2, by = "label")
+f283_subset_summary$frac_unexcised <- f283_subset_summary$unexcised / f283_subset_summary$n
+f283_subset_summary$rep <- "F283"
+
+Flank_AP1903_summary <- rbind(f280_subset_summary, f281_subset_summary, f281b_subset_summary, f282_subset_summary, f282b_subset_summary, f283_subset_summary, f283b_subset_summary)
+
+ggplot() + scale_y_log10() + 
+  geom_point(data = Flank_AP1903_summary, aes(x = label, y = frac_unexcised, color = rep))
+```
+
+
+
 
 ```{r Flanking sequencing data}
 flanked_seq <- read.csv(file = "data/Flanked_sequencing.csv", header = T, stringsAsFactors = F)
@@ -1038,7 +1237,6 @@ Flanking_sequencing <- ggplot() + theme(panel.grid.major.x = element_blank(), le
 ggsave(file = "plots/Flanking_sequencing.pdf", Flanking_sequencing, height = 1.8, width = 2.2)
 Flanking_sequencing
 ```
-
 
 
 ## Transcriptional reporter
@@ -1251,7 +1449,72 @@ umap_clustering
 
 
 
+```{r Flanking data - Flow Cyometry BACKUP BEFORE CLEANUP}
+## Making a data frame to keep track of how many unexcised cells are observed with G718A
+flanking_flow_df <- data.frame("flow" = NA, "frac_unexcised" = NA)
+flank_red_pos_cutoff <- 3e3
 
+## F46 LSR2
+f46_g718a <- read.csv(file = "data/flow/Flanking/LSR2/F46_G718A_029_Singlets.csv.gz") %>% mutate("flow" = "F46", sample = "Flanked")
+f46_g747a <- read.csv(file = "data/flow/Flanking/LSR2/F46_G747A_030_Singlets.csv.gz") %>% mutate("flow" = "F46", sample = "Control")
+
+flank_expt_cell_num <- 12000
+flank_red_pos_cutoff <- 1e4
+
+f46 <- rbind(f46_g718a[1:flank_expt_cell_num,], f46_g747a[1:flank_expt_cell_num,])
+
+ggplot() + theme_bw() + 
+  scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
+  scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
+  geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) +
+  geom_point(data = f46, aes(x = YG610.A, y = B525.A), alpha = 0.01) +
+  facet_grid(rows = vars(sample))
+
+f46$ratio <- f46$B525.A / f46$YG610.A
+f46_subset <- f46 %>% filter(YG610.A >= flank_red_pos_cutoff)
+
+f46_control_95pct_interval <- c(quantile((f46_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f46_subset %>% filter(sample == "Control"))$ratio,0.975))
+
+ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
+  geom_histogram(data = f46_subset, aes(x = ratio), binwidth = 0.01) +
+  facet_grid(rows = vars(sample)) +
+  geom_vline(xintercept  = f46_control_95pct_interval, linetype = 2)
+
+f46_fraction_unexcised <- sum((f46_subset %>% filter(sample == "Flanked"))$ratio > f46_control_95pct_interval[1])/nrow((f46_subset %>% filter(sample == "Flanked")))
+flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F46", "frac_unexcised" = f46_fraction_unexcised))
+
+
+## F101 Aria
+f101_none <- read.csv(file = "data/flow/Flanking/Aria/F101_None_001_Singlets.csv.gz") %>% mutate("flow" = "F101", sample = "None")
+f101_g718a <- read.csv(file = "data/flow/Flanking/Aria/F101_G718A_002_Singlets.csv.gz") %>% mutate("flow" = "F101", sample = "Flanked")
+f101_g747a <- read.csv(file = "data/flow/Flanking/Aria/F101_G747A_003_Singlets.csv.gz") %>% mutate("flow" = "F101", sample = "Control")
+
+flank_expt_cell_num <- 2400
+flank_red_pos_cutoff <- 5e3
+
+f101 <- rbind(f101_none[1:flank_expt_cell_num,], f101_g718a[1:flank_expt_cell_num,], f101_g747a[1:flank_expt_cell_num,])
+
+ggplot() + theme_bw() + 
+  scale_x_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
+  scale_y_log10(limits = c(1e1,1e5), expand = c(0,0)) + 
+  geom_vline(xintercept = flank_red_pos_cutoff, linetype = 2) +
+  geom_point(data = f101, aes(x = G610.A, y = B515.A), alpha = 0.01) +
+  facet_grid(rows = vars(sample))
+
+f101$ratio <- f101$B515.A / f101$G610.A
+f101_subset <- f101 %>% filter(G610.A >= flank_red_pos_cutoff)
+
+f101_control_95pct_interval <- c(quantile((f101_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f101_subset %>% filter(sample == "Control"))$ratio,0.975))
+
+ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) +
+  geom_histogram(data = f101_subset, aes(x = ratio), binwidth = 0.01) +
+  facet_grid(rows = vars(sample)) +
+  geom_vline(xintercept  = f101_control_95pct_interval, linetype = 2)
+
+f101_fraction_unexcised <- sum((f101_subset %>% filter(sample == "Flanked"))$ratio > f101_control_95pct_interval[1])/nrow((f101_subset %>% filter(sample == "Flanked")))
+flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F101", "frac_unexcised" = f101_fraction_unexcised))
+
+```
 
 
 
