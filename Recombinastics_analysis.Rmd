@@ -12,6 +12,7 @@ library(ggrepel)
 library(reshape)
 library(abind)
 library(gridExtra)
+library(ggbeeswarm)
 
 theme_set(theme_bw())
 theme_update(panel.grid.minor = element_blank())
@@ -62,9 +63,9 @@ print(Recombination_method_plot)
 
 # This next chunk is for testing the orthogonality of the GT and GA Bxb1 sequences
 ```{r Stuff, fig.height = 2, fig.width = 3}
-rep_1_frame <- read.csv(file = "data/GT_vs_GA_200206.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
-rep_2_frame <- read.csv(file = "data/GT_vs_GA_200213.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
-rep_3_frame <- read.csv(file = "data/GT_vs_GA_200219.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
+rep_1_frame <- read.csv(file = "data/Orthog_recomb/GT_vs_GA_200206.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
+rep_2_frame <- read.csv(file = "data/Orthog_recomb/GT_vs_GA_200213.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
+rep_3_frame <- read.csv(file = "data/Orthog_recomb/GT_vs_GA_200219.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
 
 replicates <- 2
 rep_1 <- log10(rep_1_frame[,5:8])
@@ -976,9 +977,6 @@ f283b_fraction_unexcised <- sum((f283b_subset %>% filter(sample == "Flanked"))$r
 flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F283b", "frac_unexcised" = f283b_fraction_unexcised))
 ```
 
-
-
-
 ```{r Flanking data - Flow Cyometry}
 ## Some summary graphs
 ## An example set of samples
@@ -1144,9 +1142,11 @@ f283_g718a <- read.csv(file = "data/flow/Flanking/F283/F283_G718A_unselected_A1.
 f283_g747a <- read.csv(file = "data/flow/Flanking/F283/F283_G747A_unselected_A2.csv.gz") %>% mutate("flow" = "F283", sample = "Control", treatment = "none")
 f283_g718a_ap1903 <- read.csv(file = "data/flow/Flanking/F283/F283_G718A_AP1903_B1.csv.gz") %>% mutate("flow" = "F283", sample = "Flanked", treatment = "AP1903")
 f283_g747a_ap1903 <- read.csv(file = "data/flow/Flanking/F283/F283_G747A_AP1903_B2.csv.gz") %>% mutate("flow" = "F283", sample = "Control", treatment = "AP1903")
-flank_expt_cell_num <- 245000
+f283_g718a_hygro <- read.csv(file = "data/flow/Flanking/F283/F283_G718A_Hygro_C1.csv.gz") %>% mutate("flow" = "F283b", sample = "Flanked", treatment = "Hygro")
+f283_g747a_hygro <- read.csv(file = "data/flow/Flanking/F283/F283_G747A_Hygro_C2.csv.gz") %>% mutate("flow" = "F283b", sample = "Control", treatment = "Hygro")
+flank_expt_cell_num <- 12000
 flank_red_pos_cutoff <- 3e3
-f283 <- rbind(f283_g718a[1:flank_expt_cell_num,], f283_g747a[1:flank_expt_cell_num,], f283_g718a_ap1903[1:flank_expt_cell_num,], f283_g747a_ap1903[1:flank_expt_cell_num,])
+f283 <- rbind(f283_g718a[1:flank_expt_cell_num,], f283_g747a[1:flank_expt_cell_num,], f283_g718a_ap1903[1:flank_expt_cell_num,], f283_g747a_ap1903[1:flank_expt_cell_num,], f283_g718a_hygro[1:flank_expt_cell_num,], f283_g747a_hygro[1:flank_expt_cell_num,])
 f283$ratio <- f283$BL1.A / f283$YL2.A
 f283_subset <- f283 %>% filter(YL2.A >= flank_red_pos_cutoff)
 f283_control_95pct_interval <- c(quantile((f283_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f283_subset %>% filter(sample == "Control"))$ratio,0.975))
@@ -1177,55 +1177,117 @@ f283b_subset_summary <- merge(f283b_subset_summary1, f283b_subset_summary2, by =
 f283b_subset_summary$frac_unexcised <- f283b_subset_summary$unexcised / f283b_subset_summary$n
 f283b_subset_summary$rep <- "F283b"
 
-flank_ap1903_summary <- rbind(f280_subset_summary, f281_subset_summary, f281b_subset_summary, f282_subset_summary, f282b_subset_summary, f283_subset_summary, f283b_subset_summary)
+## F284
+f284_g718a_ap1903_hygro <- read.csv(file = "data/flow/Flanking/F284/F284_G718A_AP1903_Hygro_A1.csv.gz") %>% mutate("flow" = "F284", sample = "Flanked", treatment = "AP1903_Hygro")
+f284_g747a_ap1903_hygro <- read.csv(file = "data/flow/Flanking/F284/F284_G747A_AP1903_Hygro_A2.csv.gz") %>% mutate("flow" = "F284", sample = "Control", treatment = "AP1903_Hygro")
+f284_g718a_hygro <- read.csv(file = "data/flow/Flanking/F284/F284_G718A_Hygro_B1.csv.gz") %>% mutate("flow" = "F284", sample = "Flanked", treatment = "Hygro")
+f284_g747a_hygro <- read.csv(file = "data/flow/Flanking/F284/F284_G747A_Hygro_B2.csv.gz") %>% mutate("flow" = "F284", sample = "Control", treatment = "Hygro")
+flank_expt_cell_num <- 51000
+flank_red_pos_cutoff <- 3e3
+f284 <- rbind(f284_g718a_ap1903_hygro[1:flank_expt_cell_num,], f284_g747a_ap1903_hygro[1:flank_expt_cell_num,], f284_g718a_hygro[1:flank_expt_cell_num,], f284_g747a_hygro[1:flank_expt_cell_num,])
+f284$ratio <- f284$BL1.A / f284$YL2.A
+f284_subset <- f284 %>% filter(YL2.A >= flank_red_pos_cutoff)
+f284_control_95pct_interval <- c(quantile((f284_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f284_subset %>% filter(sample == "Control"))$ratio,0.975))
+f284_subset$label <- paste0(f284_subset$sample,"_",f284_subset$treatment)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f284_subset, aes(x = ratio), binwidth = 0.01) + facet_wrap(~label, scales = "free_y") + geom_vline(xintercept  = f284_control_95pct_interval, linetype = 2)
+f284_subset_summary1 <- f284_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f284_control_95pct_interval))
+f284_subset_summary2 <- f284_subset %>% group_by(label) %>% count()
+f284_subset_summary <- merge(f284_subset_summary1, f284_subset_summary2, by = "label")
+f284_subset_summary$frac_unexcised <- f284_subset_summary$unexcised / f284_subset_summary$n
+f284_subset_summary$rep <- "F284"
+
+## F284b
+f284b_g718a_hygro <- read.csv(file = "data/flow/Flanking/F284/F284b_G718A_Hygro_B3.csv.gz") %>% mutate("flow" = "F284b", sample = "Flanked", treatment = "Hygro")
+f284b_g747a_hygro <- read.csv(file = "data/flow/Flanking/F284/F284b_G747A_Hygro_B4.csv.gz") %>% mutate("flow" = "F284b", sample = "Control", treatment = "Hygro")
+f284b_g718a_ap1903_hygro <- read.csv(file = "data/flow/Flanking/F284/F284b_G718A_AP1903_Hygro_A3.csv.gz") %>% mutate("flow" = "F284b", sample = "Flanked", treatment = "AP1903_Hygro")
+f284b_g747a_ap1903_hygro <- read.csv(file = "data/flow/Flanking/F284/F284b_G747A_AP1903_Hygro_A4.csv.gz") %>% mutate("flow" = "F284b", sample = "Control", treatment = "AP1903_Hygro")
+flank_expt_cell_num <- 35000
+flank_red_pos_cutoff <- 3e3
+f284b <- rbind(f284b_g718a_hygro[1:flank_expt_cell_num,], f284b_g747a_hygro[1:flank_expt_cell_num,], f284b_g718a_ap1903_hygro[1:flank_expt_cell_num,], f284b_g747a_ap1903_hygro[1:flank_expt_cell_num,])
+f284b$ratio <- f284b$BL1.A / f284b$YL2.A
+f284b_subset <- f284b %>% filter(YL2.A >= flank_red_pos_cutoff)
+f284b_control_95pct_interval <- c(quantile((f284b_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f284b_subset %>% filter(sample == "Control"))$ratio,0.975))
+f284b_subset$label <- paste0(f284b_subset$sample,"_",f284b_subset$treatment)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f284b_subset, aes(x = ratio), binwidth = 0.01) + facet_wrap(~label, scales = "free_y") + geom_vline(xintercept  = f284b_control_95pct_interval, linetype = 2)
+f284b_subset_summary1 <- f284b_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f284b_control_95pct_interval))
+f284b_subset_summary2 <- f284b_subset %>% group_by(label) %>% count()
+f284b_subset_summary <- merge(f284b_subset_summary1, f284b_subset_summary2, by = "label")
+f284b_subset_summary$frac_unexcised <- f284b_subset_summary$unexcised / f284b_subset_summary$n
+f284b_subset_summary$rep <- "F284b"
+
+
+## F285
+f285_g718a_hygro <- read.csv(file = "data/flow/Flanking/F285/F285_G718A_Hygro_A3.csv.gz") %>% mutate("flow" = "F285", sample = "Flanked", treatment = "Hygro")
+f285_g747a_hygro <- read.csv(file = "data/flow/Flanking/F285/F285_G747A_Hygro_A4.csv.gz") %>% mutate("flow" = "F285", sample = "Control", treatment = "Hygro")
+flank_expt_cell_num <- 235000
+flank_red_pos_cutoff <- 3e3
+f285 <- rbind(f285_g718a_hygro[1:flank_expt_cell_num,], f285_g747a_hygro[1:flank_expt_cell_num,])
+f285$ratio <- f285$BL1.A / f285$YL2.A
+f285_subset <- f285 %>% filter(YL2.A >= flank_red_pos_cutoff)
+f285_control_95pct_interval <- c(quantile((f285_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f285_subset %>% filter(sample == "Control"))$ratio,0.975))
+f285_subset$label <- paste0(f285_subset$sample,"_",f285_subset$treatment)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f285_subset, aes(x = ratio), binwidth = 0.01) + facet_wrap(~label, scales = "free_y") + geom_vline(xintercept  = f285_control_95pct_interval, linetype = 2)
+f285_subset_summary1 <- f285_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f285_control_95pct_interval))
+f285_subset_summary2 <- f285_subset %>% group_by(label) %>% count()
+f285_subset_summary <- merge(f285_subset_summary1, f285_subset_summary2, by = "label")
+f285_subset_summary$frac_unexcised <- f285_subset_summary$unexcised / f285_subset_summary$n
+f285_subset_summary$rep <- "F285"
+
+## F286
+f286_g718a_hygro <- read.csv(file = "data/flow/Flanking/F286/F286_G718A_Hygro_B1.csv.gz") %>% mutate("flow" = "F286", sample = "Flanked", treatment = "Hygro")
+f286_g747a_hygro <- read.csv(file = "data/flow/Flanking/F286/F286_G747A_Hygro_B2.csv.gz") %>% mutate("flow" = "F286", sample = "Control", treatment = "Hygro")
+flank_expt_cell_num <- 88000
+flank_red_pos_cutoff <- 3e3
+f286 <- rbind(f286_g718a_hygro[1:flank_expt_cell_num,], f286_g747a_hygro[1:flank_expt_cell_num,])
+f286$ratio <- f286$BL1.A / f286$YL2.A
+f286_subset <- f286 %>% filter(YL2.A >= flank_red_pos_cutoff)
+f286_control_95pct_interval <- c(quantile((f286_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f286_subset %>% filter(sample == "Control"))$ratio,0.975))
+f286_subset$label <- paste0(f286_subset$sample,"_",f286_subset$treatment)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f286_subset, aes(x = ratio), binwidth = 0.01) + facet_wrap(~label, scales = "free_y") + geom_vline(xintercept  = f286_control_95pct_interval, linetype = 2)
+f286_subset_summary1 <- f286_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f286_control_95pct_interval))
+f286_subset_summary2 <- f286_subset %>% group_by(label) %>% count()
+f286_subset_summary <- merge(f286_subset_summary1, f286_subset_summary2, by = "label")
+f286_subset_summary$frac_unexcised <- f286_subset_summary$unexcised / f286_subset_summary$n
+f286_subset_summary$rep <- "F286"
+
+## F286b
+f286b_g718a_hygro <- read.csv(file = "data/flow/Flanking/F286/F286b_G718A_Hygro_B3.csv.gz") %>% mutate("flow" = "F286b", sample = "Flanked", treatment = "Hygro")
+f286b_g747a_hygro <- read.csv(file = "data/flow/Flanking/F286/F286b_G747A_Hygro_B4.csv.gz") %>% mutate("flow" = "F286b", sample = "Control", treatment = "Hygro")
+f286b_g718a_ap1903_hygro <- read.csv(file = "data/flow/Flanking/F286/F286b_G718A_AP1903_Hygro_A1.csv.gz") %>% mutate("flow" = "F286b", sample = "Flanked", treatment = "AP1903_Hygro")
+f286b_g747a_ap1903_hygro <- read.csv(file = "data/flow/Flanking/F286/F286b_G747A_AP1903_Hygro_A2.csv.gz") %>% mutate("flow" = "F286b", sample = "Control", treatment = "AP1903_Hygro")
+flank_expt_cell_num <- 51000
+flank_red_pos_cutoff <- 3e3
+f286b <- rbind(f286b_g718a_hygro[1:flank_expt_cell_num,], f286b_g747a_hygro[1:flank_expt_cell_num,], f286b_g718a_ap1903_hygro[1:flank_expt_cell_num,], f286b_g747a_ap1903_hygro[1:flank_expt_cell_num,])
+f286b$ratio <- f286b$BL1.A / f286b$YL2.A
+f286b_subset <- f286b %>% filter(YL2.A >= flank_red_pos_cutoff)
+f286b_control_95pct_interval <- c(quantile((f286b_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f286b_subset %>% filter(sample == "Control"))$ratio,0.975))
+f286b_subset$label <- paste0(f286b_subset$sample,"_",f286b_subset$treatment)
+#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f286b_subset, aes(x = ratio), binwidth = 0.01) + facet_wrap(~label, scales = "free_y") + geom_vline(xintercept  = f286b_control_95pct_interval, linetype = 2)
+f286b_subset_summary1 <- f286b_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f286b_control_95pct_interval))
+f286b_subset_summary2 <- f286b_subset %>% group_by(label) %>% count()
+f286b_subset_summary <- merge(f286b_subset_summary1, f286b_subset_summary2, by = "label")
+f286b_subset_summary$frac_unexcised <- f286b_subset_summary$unexcised / f286b_subset_summary$n
+f286b_subset_summary$rep <- "F286b"
+
+
+## Now combining everything
+flank_ap1903_summary <- rbind(f280_subset_summary, f281_subset_summary, f281b_subset_summary, f282_subset_summary, f282b_subset_summary, f283_subset_summary, f283b_subset_summary, f284_subset_summary, f284b_subset_summary, f285_subset_summary, f286_subset_summary, f286b_subset_summary)
 
 flank_ap1903_summary2 <- flank_ap1903_summary %>% group_by(label) %>% summarize(geomean = 10^mean(log10(frac_unexcised)))
 
-flank_ap1903_summary$label <- factor(flank_ap1903_summary$label, levels = c("Control_none", "Control_AP1903", "Flanked_none", "Flanked_AP1903"))
-flank_ap1903_summary2$label <- factor(flank_ap1903_summary2$label, levels = c("Control_none", "Control_AP1903", "Flanked_none", "Flanked_AP1903"))
-
-library(ggbeeswarm)
+flank_ap1903_summary$label <- factor(flank_ap1903_summary$label, levels = c("Control_none", "Control_AP1903", "Control_Hygro", "Control_AP1903_Hygro", "Flanked_none", "Flanked_AP1903", "Flanked_Hygro", "Flanked_AP1903_Hygro"))
+flank_ap1903_summary2$label <- factor(flank_ap1903_summary2$label, levels = c("Control_none", "Control_AP1903", "Control_Hygro", "Control_AP1903_Hygro", "Flanked_none", "Flanked_AP1903", "Flanked_Hygro", "Flanked_AP1903_Hygro"))\
 
 Flanking_AP1903_plot <- ggplot() + theme(panel.grid.major.x = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) + 
   scale_y_log10(breaks = c(0.01,0.1,1)) + 
   labs(x = NULL, y = "Fraction of cells\nunexcised") + 
   geom_beeswarm(data = flank_ap1903_summary, aes(x = label, y = frac_unexcised), color = "red", alpha = 0.5, size = 1) +
-  geom_point(data = flank_ap1903_summary2, aes(x = label, y = geomean), shape = 95, size = 10, color = "Black") +
+  geom_point(data = flank_ap1903_summary2, aes(x = label, y = geomean), shape = 95, size = 8, color = "Black", alpha = 0.4) +
   NULL
-ggsave(file = "plots/Flanking_AP1903_plot.pdf", Flanking_AP1903_plot, height = 1.5, width = 2)
+ggsave(file = "plots/Flanking_AP1903_plot.pdf", Flanking_AP1903_plot, height = 2.25, width = 2.25)
 Flanking_AP1903_plot
 
 ```
-
-```{r Now including Hygro}
-## F283
-f283_g718a <- read.csv(file = "data/flow/Flanking/F283/F283_G718A_unselected_A1.csv.gz") %>% mutate("flow" = "F283", sample = "Flanked", treatment = "none")
-f283_g747a <- read.csv(file = "data/flow/Flanking/F283/F283_G747A_unselected_A2.csv.gz") %>% mutate("flow" = "F283", sample = "Control", treatment = "none")
-f283_g718a_ap1903 <- read.csv(file = "data/flow/Flanking/F283/F283_G718A_AP1903_B1.csv.gz") %>% mutate("flow" = "F283", sample = "Flanked", treatment = "AP1903")
-f283_g747a_ap1903 <- read.csv(file = "data/flow/Flanking/F283/F283_G747A_AP1903_B2.csv.gz") %>% mutate("flow" = "F283", sample = "Control", treatment = "AP1903")
-f283_g718a_hygro <- read.csv(file = "data/flow/Flanking/F283/F283_G718A_Hygro_C1.csv.gz") %>% mutate("flow" = "F283b", sample = "Flanked", treatment = "Hygro")
-f283_g747a_hygro <- read.csv(file = "data/flow/Flanking/F283/F283_G747A_Hygro_C2.csv.gz") %>% mutate("flow" = "F283b", sample = "Control", treatment = "Hygro")
-flank_expt_cell_num <- 12000
-flank_red_pos_cutoff <- 3e3
-f283 <- rbind(f283_g718a[1:flank_expt_cell_num,], f283_g747a[1:flank_expt_cell_num,], f283_g718a_ap1903[1:flank_expt_cell_num,], f283_g747a_ap1903[1:flank_expt_cell_num,], f283_g718a_hygro[1:flank_expt_cell_num,], f283_g747a_hygro[1:flank_expt_cell_num,])
-f283$ratio <- f283$BL1.A / f283$YL2.A
-f283_subset <- f283 %>% filter(YL2.A >= flank_red_pos_cutoff)
-f283_control_95pct_interval <- c(quantile((f283_subset %>% filter(sample == "Control"))$ratio,0.05),quantile((f283_subset %>% filter(sample == "Control"))$ratio,0.975))
-f283_subset$label <- paste0(f283_subset$sample,"_",f283_subset$treatment)
-#ggplot() + theme_bw() + scale_x_continuous(limits = c(-0.05, 0.5)) + geom_histogram(data = f283_subset, aes(x = ratio), binwidth = 0.01) + facet_wrap(~label, scales = "free_y") + geom_vline(xintercept  = f283_control_95pct_interval, linetype = 2)
-f283_subset_summary1 <- f283_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f283_control_95pct_interval))
-f283_subset_summary2 <- f283_subset %>% group_by(label) %>% count()
-f283_subset_summary <- merge(f283_subset_summary1, f283_subset_summary2, by = "label")
-f283_subset_summary$frac_unexcised <- f283_subset_summary$unexcised / f283_subset_summary$n
-f283_subset_summary$rep <- "F283"
-
-Flank_AP1903_summary <- rbind(f280_subset_summary, f281_subset_summary, f281b_subset_summary, f282_subset_summary, f282b_subset_summary, f283_subset_summary, f283b_subset_summary)
-
-ggplot() + scale_y_log10() + 
-  geom_point(data = Flank_AP1903_summary, aes(x = label, y = frac_unexcised, color = rep))
-```
-
-
 
 
 ```{r Flanking sequencing data}
@@ -1276,27 +1338,90 @@ ggsave(file = "Plots/EGF_stimulation_plot.pdf", EGF_stimulation_plot, height = 6
 
 
 
+```{r}
 
+attB_plasmid_mixture <- read.delim(file = "data/GN_recombinations/attBmix_outfile.tsv", header = T, stringsAsFactors = F)
+attB_plasmid_mixture_table <- data.frame(table(attB_plasmid_mixture$attB))
+attB_plasmid_mixture_table$Freq2 <- attB_plasmid_mixture_table$Freq / sum(attB_plasmid_mixture_table$Freq)
+colnames(attB_plasmid_mixture_table) <- c("attB","start_count","start_freq")
 
+## Rep 1
+rep1_ga <- read.delim(file = "data/GN_recombinations/Rep1_GA_outfile.tsv", header = T, stringsAsFactors = F)
+rep1_ga2 <- data.frame(table(rep1_ga$attB)) %>% mutate(attP = "GA")
+rep1_gt <- read.delim(file = "data/GN_recombinations/Rep1_GT_outfile.tsv", header = T, stringsAsFactors = F)
+rep1_gt2 <- data.frame(table(rep1_gt$attB)) %>% mutate(attP = "GT")
+rep1_gc <- read.delim(file = "data/GN_recombinations/Rep1_GC_outfile.tsv", header = T, stringsAsFactors = F)
+rep1_gc2 <- data.frame(table(rep1_gc$attB)) %>% mutate(attP = "GC")
+rep1_gg <- read.delim(file = "data/GN_recombinations/Rep1_GG_outfile.tsv", header = T, stringsAsFactors = F)
+rep1_gg2 <- data.frame(table(rep1_gg$attB)) %>% mutate(attP = "GG")
+
+rep1_comb <- rbind(rep1_ga2, rep1_gt2, rep1_gc2, rep1_gg2)
+colnames(rep1_comb) <- c("attB","Freq","attP")
+
+gn_rep1_results_frame <- data.frame("attB" = NA, "attP" = NA, "final_freq" = NA, "start_freq" = NA)
+for( x in c("GT","GA","GC","GG")){
+  temp_subset <- subset(rep1_comb, attP == x)
+  temp_subset$final_freq <- temp_subset$Freq / sum(temp_subset$Freq)
+  temp_subset2 <- merge(temp_subset[,c("attP","attB","final_freq")], attB_plasmid_mixture_table[,c("attB","start_freq")])
+  gn_rep1_results_frame <- rbind(gn_rep1_results_frame, temp_subset2)
+}
+gn_rep1_results_frame <- gn_rep1_results_frame %>% filter(!is.na(attB)) %>% mutate(rep = 1)
+
+## Rep 2
+gn_rep2 <- read.delim(file = "data/GN_recombinations/Rep2_outfile.tsv", header = T, stringsAsFactors = F)
+gn_rep2_table <- data.frame(with(gn_rep2,table(attP,attB)))
+
+gn_rep2_results_frame <- data.frame("attB" = NA, "attP" = NA, "final_freq" = NA, "start_freq" = NA)
+for( x in c("GT","GA","GC","GG")){
+  temp_subset <- subset(gn_rep2_table, attP == x)
+  temp_subset$final_freq <- temp_subset$Freq / sum(temp_subset$Freq)
+  temp_subset2 <- merge(temp_subset[,c("attP","attB","final_freq")], attB_plasmid_mixture_table[,c("attB","start_freq")])
+  gn_rep2_results_frame <- rbind(gn_rep2_results_frame, temp_subset2)
+}
+gn_rep2_results_frame <- gn_rep2_results_frame %>% filter(!is.na(attB)) %>% mutate(rep = 2)
+
+## Rep 3
+gn_rep3 <- read.delim(file = "data/GN_recombinations/Rep3_outfile.tsv", header = T, stringsAsFactors = F)
+gn_rep3_table <- data.frame(with(gn_rep3,table(attP,attB)))
+
+gn_rep3_results_frame <- data.frame("attB" = NA, "attP" = NA, "final_freq" = NA, "start_freq" = NA)
+for( x in c("GT","GA","GC","GG")){
+  temp_subset <- subset(gn_rep3_table, attP == x)
+  temp_subset$final_freq <- temp_subset$Freq / sum(temp_subset$Freq)
+  temp_subset2 <- merge(temp_subset[,c("attP","attB","final_freq")], attB_plasmid_mixture_table[,c("attB","start_freq")])
+  gn_rep3_results_frame <- rbind(gn_rep3_results_frame, temp_subset2)
+}
+gn_rep3_results_frame <- gn_rep3_results_frame %>% filter(!is.na(attB)) %>% mutate(rep = 3)
+
+## Combine the results of all three replicates
+
+gn_combined <- rbind(gn_rep1_results_frame, gn_rep2_results_frame, gn_rep3_results_frame)
+
+gn_combined$enrichment <- gn_combined$final_freq/gn_combined$start_freq
+
+gn_combined_summary <- gn_combined %>% group_by(attP, attB) %>% summarize(mean = mean(final_freq), sd = sd(final_freq))
+
+gn_combined_summary2 <- rbind(gn_combined_summary, data.frame("attP" = "None", "attB" = attB_plasmid_mixture_table$attB, "mean" = attB_plasmid_mixture_table$start_freq, "sd" = NA))
+
+gn_combined_summary2$attP <- factor(gn_combined_summary2$attP, levels = c("None", "GT","GA","GC","GG"))
+```
 
 
 
 ```{r Recombination mixture experiments}
-recomb_mixture <- read.csv(file = "data/recomb_mixture.csv", header = T, stringsAsFactors = F)
-
 Orthogonal_plasmid_recombinations <- ggplot() + scale_y_log10() + theme(panel.grid.major.x = element_blank()) +
   labs(x = "AttP plasmid (individually tested)", y = "Fraction of\nrecombinants", color = "AttB\nplasmid\n(mixed)") + 
-  geom_point(data = recomb_mixture, aes(x = landing_pad, y = fraction, color = recomb_vector), position = position_dodge(width = 0.4))
-ggsave(file = "plots/Orthogonal_plasmid_recombinations.pdf", Orthogonal_plasmid_recombinations, height = 2, width = 4)
+  geom_point(data = gn_combined_summary2, aes(x = attP, y = mean, color = attB), position = position_dodge(width = 0.6)) +
+  geom_errorbar(data = gn_combined_summary2, aes(x = attP, ymin = mean - sd/sqrt(2)*1.96, ymax = mean + sd/sqrt(3)*1.96, color = attB), position = position_dodge(width = 0.6), width = 0.5, alpha = 0.5)
+ggsave(file = "plots/Orthogonal_plasmid_recombinations.pdf", Orthogonal_plasmid_recombinations, height = 2, width = 4.2)
 Orthogonal_plasmid_recombinations
 ```
 
-
 ```{r Recombination mixture experiments 2}
-recomb_mixture_test <- recomb_mixture[1:16,c("landing_pad","recomb_vector")]
+recomb_mixture_test <- gn_combined_summary[1:16,c("attP","attB")]
 colnames(recomb_mixture_test) <- c("lp1","lp2")
 
-simulation_test_size = 20000
+simulation_test_size = 50000
 recomb_mixture_test$on_target <- NA
 
 for(x in 1:nrow(recomb_mixture_test)){
@@ -1310,10 +1435,10 @@ for(x in 1:nrow(recomb_mixture_test)){
     recomb_mixture_test$on_target[x] <- sum(results_frame$sum == 1)
   }
   if(recomb_mix_lp1 != recomb_mix_lp2){
-    lp1_probs <- recomb_mixture %>% filter(landing_pad == recomb_mix_lp1 & recomb_vector %in% c(recomb_mix_lp1, recomb_mix_lp2))
-    lp2_probs <- recomb_mixture %>% filter(landing_pad == recomb_mix_lp2 & recomb_vector %in% c(recomb_mix_lp1, recomb_mix_lp2))
-    lp1_sampling <- sample(x = lp1_probs$recomb_vector, prob = lp1_probs$fraction , size = simulation_test_size, replace = T)
-    lp2_sampling <- sample(x = lp2_probs$recomb_vector, prob = lp2_probs$fraction , size = simulation_test_size, replace = T)
+    lp1_probs <- gn_combined_summary %>% filter(attP == recomb_mix_lp1 & attB %in% c(recomb_mix_lp1, recomb_mix_lp2))
+    lp2_probs <- gn_combined_summary %>% filter(attP == recomb_mix_lp2 & attB %in% c(recomb_mix_lp1, recomb_mix_lp2))
+    lp1_sampling <- sample(x = lp1_probs$attB, prob = lp1_probs$mean , size = simulation_test_size, replace = T)
+    lp2_sampling <- sample(x = lp2_probs$attB, prob = lp2_probs$mean , size = simulation_test_size, replace = T)
     results_frame <- data.frame("lp1_on_target" = lp1_sampling == recomb_mix_lp1, "lp2_on_target" = lp2_sampling == recomb_mix_lp2)
     results_frame$sum <- results_frame$lp1_on_target + results_frame$lp2_on_target
     recomb_mixture_test$on_target[x] <- sum(results_frame$sum == 2)
