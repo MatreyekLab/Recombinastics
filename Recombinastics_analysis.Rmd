@@ -1276,7 +1276,7 @@ flank_ap1903_summary <- rbind(f280_subset_summary, f281_subset_summary, f281b_su
 flank_ap1903_summary2 <- flank_ap1903_summary %>% group_by(label) %>% summarize(geomean = 10^mean(log10(frac_unexcised)))
 
 flank_ap1903_summary$label <- factor(flank_ap1903_summary$label, levels = c("Control_none", "Control_AP1903", "Control_Hygro", "Control_AP1903_Hygro", "Flanked_none", "Flanked_AP1903", "Flanked_Hygro", "Flanked_AP1903_Hygro"))
-flank_ap1903_summary2$label <- factor(flank_ap1903_summary2$label, levels = c("Control_none", "Control_AP1903", "Control_Hygro", "Control_AP1903_Hygro", "Flanked_none", "Flanked_AP1903", "Flanked_Hygro", "Flanked_AP1903_Hygro"))\
+flank_ap1903_summary2$label <- factor(flank_ap1903_summary2$label, levels = c("Control_none", "Control_AP1903", "Control_Hygro", "Control_AP1903_Hygro", "Flanked_none", "Flanked_AP1903", "Flanked_Hygro", "Flanked_AP1903_Hygro"))
 
 Flanking_AP1903_plot <- ggplot() + theme(panel.grid.major.x = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) + 
   scale_y_log10(breaks = c(0.01,0.1,1)) + 
@@ -1293,43 +1293,33 @@ Flanking_AP1903_plot
 ```{r Flanking sequencing data}
 flanked_seq <- read.csv(file = "data/Flanked_sequencing.csv", header = T, stringsAsFactors = F)
 
+flanked_seq_geomean <- flanked_seq %>% group_by(sample, result) %>% summarize(geomean_fraction = 10^(mean(log10(fraction))))
+
 Flanking_sequencing <- ggplot() + theme(panel.grid.major.x = element_blank(), legend.position = "top") + 
   labs(x = NULL, y = "Fraction of reads") +
-  geom_point(data = flanked_seq, aes(x = sample, y = fraction, color = result), position = position_dodge(width = 0.2))
-ggsave(file = "plots/Flanking_sequencing.pdf", Flanking_sequencing, height = 1.8, width = 2.2)
+  geom_point(data = flanked_seq, aes(x = sample, y = fraction, color = result), position = position_dodge(width = 0.5), alpha = 0.4) +
+  geom_point(data = flanked_seq_geomean, aes(x = sample, y = geomean_fraction, color = result), position = position_dodge(width = 0.5), shape = 95, size = 10)
+ggsave(file = "plots/Flanking_sequencing.pdf", Flanking_sequencing, height = 2, width = 2.2)
 Flanking_sequencing
 ```
 
+```{r}
 
-## Transcriptional reporter
-```{r Import the initial set of data showing how it works with EGF stimulation}
-flow_01_none <- read.csv(file = "Data/EGF_stimulation_48hr/01_none.csv", header = T, stringsAsFactors = FALSE); colnames(flow_01_none) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_01_none$order <- 1;flow_01_none <- flow_01_none[1:18000,]
-flow_02_E <- read.csv(file = "Data/EGF_stimulation_48hr/02_E.csv", header = T, stringsAsFactors = FALSE); colnames(flow_02_E) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_02_E$order <- 2;flow_02_E <- flow_02_E[1:18000,]
-flow_03_T <- read.csv(file = "Data/EGF_stimulation_48hr/03_T.csv", header = T, stringsAsFactors = FALSE); colnames(flow_03_T) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_03_T$order <- 3;flow_03_T <- flow_03_T[1:18000,]
-flow_04_U <- read.csv(file = "Data/EGF_stimulation_48hr/04_U.csv", header = T, stringsAsFactors = FALSE); colnames(flow_04_U) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_04_U$order <- 4;flow_04_U <- flow_04_U[1:18000,]
-flow_05_ET <- read.csv(file = "Data/EGF_stimulation_48hr/05_ET.csv", header = T, stringsAsFactors = FALSE); colnames(flow_05_ET) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_05_ET$order <- 5;flow_05_ET <- flow_05_ET[1:18000,]
-flow_06_EU <- read.csv(file = "Data/EGF_stimulation_48hr/06_EU.csv", header = T, stringsAsFactors = FALSE); colnames(flow_06_EU) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_06_EU$order <- 6;flow_06_EU <- flow_06_EU[1:18000,]
-flow_07_TU <- read.csv(file = "Data/EGF_stimulation_48hr/07_TU.csv", header = T, stringsAsFactors = FALSE); colnames(flow_07_TU) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_07_TU$order <- 7;flow_07_TU <- flow_07_TU[1:18000,]
-flow_08_ETU <- read.csv(file = "Data/EGF_stimulation_48hr/08_ETU.csv", header = T, stringsAsFactors = FALSE); colnames(flow_08_ETU) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_08_ETU$order <- 8;flow_08_ETU <- flow_08_ETU[1:18000,]
+vif_apobec <- read.csv(file = "data/flow/Vif_Apobec/Orientations.csv")
+vif_apobec_fusions <- vif_apobec %>% filter(gene != "None")
+vif_apobec_egfp <- vif_apobec %>% filter(gene == "None")
 
-flow_combined <- rbind(flow_01_none, flow_02_E, flow_03_T, flow_04_U, flow_05_ET, flow_06_EU, flow_07_TU, flow_08_ETU)
 
-flow_combined_summary <- flow_combined %>% group_by(order) %>% summarize(median = median(gfp_a))
+Apobec_fusions_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank()) +
+  labs(x = "Geometric mean of MFI (Apobec only)", y = "Geometric mean of MFI\n(HIV-1 vif coexpressed)") +
+  scale_x_log10() + scale_y_log10() +
+  geom_abline(slope = 1, alpha = 0.2, linetype = 2, alpha = 0.5, size = 1.5) +
+  geom_point(data = vif_apobec_fusions, aes(x = stop, y = wt, color = gene, shape = orientation), size = 3, alpha = 0.7) +
+  geom_point(data = vif_apobec_egfp, aes(x = stop, y = wt), size = 3, shape = 15, alpha = 0.7)
+Apobec_fusions_plot
+ggsave(file = "plots/Apobec_fusions_plot.pdf", Apobec_fusions_plot, height = 2.2, width = 4)
 
-flow_combined_summary$median[5] / flow_combined_summary$median[1]
-
-EGF_stimulation_plot <- ggplot() + 
-  xlab("Green fluorescence") +
-  ylab("Number of cells") +
-  scale_x_log10(limits = c(10,1e5), expand = c(0,0)) + 
-  scale_y_continuous(breaks = c(250)) +
-  geom_histogram(data = flow_combined, aes(x = gfp_a), bins = 100, alpha = 0.75) +
-  facet_grid(rows = vars(order), scales = "free_y")
-EGF_stimulation_plot
-ggsave(file = "Plots/EGF_stimulation_plot.pdf", EGF_stimulation_plot, height = 60, width = 70, units = "mm")
 ```
-
-
 
 
 
@@ -1401,18 +1391,24 @@ gn_combined$enrichment <- gn_combined$final_freq/gn_combined$start_freq
 
 gn_combined_summary <- gn_combined %>% group_by(attP, attB) %>% summarize(mean = mean(final_freq), sd = sd(final_freq))
 
-gn_combined_summary2 <- rbind(gn_combined_summary, data.frame("attP" = "None", "attB" = attB_plasmid_mixture_table$attB, "mean" = attB_plasmid_mixture_table$start_freq, "sd" = NA))
+gn_combined_summary2 <- rbind(gn_combined_summary, data.frame("attP" = "Input", "attB" = attB_plasmid_mixture_table$attB, "mean" = attB_plasmid_mixture_table$start_freq, "sd" = NA))
 
-gn_combined_summary2$attP <- factor(gn_combined_summary2$attP, levels = c("None", "GT","GA","GC","GG"))
+
 ```
 
 
 
 ```{r Recombination mixture experiments}
+gn_combined$attP <- factor(gn_combined$attP, levels = c("GT","GA","GC","GG"))
+gn_combined_summary2$attP <- factor(gn_combined_summary2$attP, levels = c("Input", "GT","GA","GC","GG"))
+
 Orthogonal_plasmid_recombinations <- ggplot() + scale_y_log10() + theme(panel.grid.major.x = element_blank()) +
   labs(x = "AttP plasmid (individually tested)", y = "Fraction of\nrecombinants", color = "AttB\nplasmid\n(mixed)") + 
-  geom_point(data = gn_combined_summary2, aes(x = attP, y = mean, color = attB), position = position_dodge(width = 0.6)) +
-  geom_errorbar(data = gn_combined_summary2, aes(x = attP, ymin = mean - sd/sqrt(2)*1.96, ymax = mean + sd/sqrt(3)*1.96, color = attB), position = position_dodge(width = 0.6), width = 0.5, alpha = 0.5)
+  geom_point(data = gn_combined_summary2, aes(x = attP, y = mean, color = attB), position = position_dodge(width = 0.6), shape = 95, size = 4) +
+  geom_point(data = gn_combined, aes(x = attP, y = final_freq, color = attB), position = position_dodge(width = 0.6), alpha = 0.4) +
+  #geom_errorbar(data = gn_combined_summary2, aes(x = attP, ymin = mean - sd/sqrt(2)*1.96, ymax = mean + sd/sqrt(3)*1.96, color = attB), position = position_dodge(width = 0.6), width = 0.5, alpha = 0.5) +
+  geom_point(data = gn_combined_summary2, aes(x = attP, y = mean, color = attB), position = position_dodge(width = 0.6), shape = 95, size = 4) +
+  NULL
 ggsave(file = "plots/Orthogonal_plasmid_recombinations.pdf", Orthogonal_plasmid_recombinations, height = 2, width = 4.2)
 Orthogonal_plasmid_recombinations
 ```
@@ -1460,6 +1456,37 @@ Double_LP_heatmap
 
 
 
+
+
+
+
+## Transcriptional reporter
+```{r Import the initial set of data showing how it works with EGF stimulation}
+flow_01_none <- read.csv(file = "Data/EGF_stimulation_48hr/01_none.csv", header = T, stringsAsFactors = FALSE); colnames(flow_01_none) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_01_none$order <- 1;flow_01_none <- flow_01_none[1:18000,]
+flow_02_E <- read.csv(file = "Data/EGF_stimulation_48hr/02_E.csv", header = T, stringsAsFactors = FALSE); colnames(flow_02_E) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_02_E$order <- 2;flow_02_E <- flow_02_E[1:18000,]
+flow_03_T <- read.csv(file = "Data/EGF_stimulation_48hr/03_T.csv", header = T, stringsAsFactors = FALSE); colnames(flow_03_T) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_03_T$order <- 3;flow_03_T <- flow_03_T[1:18000,]
+flow_04_U <- read.csv(file = "Data/EGF_stimulation_48hr/04_U.csv", header = T, stringsAsFactors = FALSE); colnames(flow_04_U) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_04_U$order <- 4;flow_04_U <- flow_04_U[1:18000,]
+flow_05_ET <- read.csv(file = "Data/EGF_stimulation_48hr/05_ET.csv", header = T, stringsAsFactors = FALSE); colnames(flow_05_ET) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_05_ET$order <- 5;flow_05_ET <- flow_05_ET[1:18000,]
+flow_06_EU <- read.csv(file = "Data/EGF_stimulation_48hr/06_EU.csv", header = T, stringsAsFactors = FALSE); colnames(flow_06_EU) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_06_EU$order <- 6;flow_06_EU <- flow_06_EU[1:18000,]
+flow_07_TU <- read.csv(file = "Data/EGF_stimulation_48hr/07_TU.csv", header = T, stringsAsFactors = FALSE); colnames(flow_07_TU) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_07_TU$order <- 7;flow_07_TU <- flow_07_TU[1:18000,]
+flow_08_ETU <- read.csv(file = "Data/EGF_stimulation_48hr/08_ETU.csv", header = T, stringsAsFactors = FALSE); colnames(flow_08_ETU) <- c("fsc_a","fsc_h","fsc_w","ssc_a","apc_a","gfp_a","red_a","blue_a");flow_08_ETU$order <- 8;flow_08_ETU <- flow_08_ETU[1:18000,]
+
+flow_combined <- rbind(flow_01_none, flow_02_E, flow_03_T, flow_04_U, flow_05_ET, flow_06_EU, flow_07_TU, flow_08_ETU)
+
+flow_combined_summary <- flow_combined %>% group_by(order) %>% summarize(median = median(gfp_a))
+
+flow_combined_summary$median[5] / flow_combined_summary$median[1]
+
+EGF_stimulation_plot <- ggplot() + 
+  xlab("Green fluorescence") +
+  ylab("Number of cells") +
+  scale_x_log10(limits = c(10,1e5), expand = c(0,0)) + 
+  scale_y_continuous(breaks = c(250)) +
+  geom_histogram(data = flow_combined, aes(x = gfp_a), bins = 100, alpha = 0.75) +
+  facet_grid(rows = vars(order), scales = "free_y")
+EGF_stimulation_plot
+ggsave(file = "Plots/EGF_stimulation_plot.pdf", EGF_stimulation_plot, height = 60, width = 70, units = "mm")
+```
 
 
 
