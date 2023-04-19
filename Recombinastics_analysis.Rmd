@@ -1323,6 +1323,29 @@ ggsave(file = "plots/Apobec_fusions_plot.pdf", Apobec_fusions_plot, height = 2.2
 
 ```
 
+```{r Vif Apobec }
+va_rep1 <- read.csv(file = "Data/Vif_apobec/Vif_apobec_rep1.csv", header = T)
+for(x in 1:nrow(va_rep1)){
+  for(y in 2:ncol(va_rep1)){
+    va_rep1[x,y] <- va_rep1[x,y] / va_rep1[6,y]
+  }
+}
+va_rep1_melt <- melt(va_rep1)
+colnames(va_rep1_melt) <- c("vif","apobec","normalized")
+
+va_rep1_melt$apobec <- factor(va_rep1_melt$apobec, levels = c("EGFP","A3G.EGFP","EGFP.A3D","EGFP.A3F","EGFP.A3H2"))
+va_rep1_melt$vif <- factor(va_rep1_melt$vif, levels = rev(c("WT","STOP","A149Y","W11A","F39A","H43E")))
+
+ggplot() + theme_bw() +
+  labs(x = "EGFP or Apobec fusion", y = "HIV-1 Vif variant") +
+  #scale_fill_gradient2(low = "white", mid = "darkgreen", high = "red", na.value = "brown4", limits = c(0.25,1.3), midpoint = 1) + 
+  scale_fill_gradient2(low = "white", mid = "darkgreen", high = "red", na.value = "green4", limits = c(log2(0.25),log2(1.3)), midpoint = 1) + 
+  geom_tile(data = va_rep1_melt, aes(x = apobec, y = vif, fill = log2(normalized)))
+
+```
+
+
+
 
 
 
