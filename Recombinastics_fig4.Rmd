@@ -1,0 +1,231 @@
+---
+title: "Recombinastics_gcampf"
+author: "Nisha Kamath"
+date: "4/18/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(reshape2)
+library(gridExtra)
+theme_set(theme_bw())
+
+```
+
+```{r}
+rep1 = read.csv("rep1_signal.csv")
+rep1 = rep1[-1]
+rep2 = read.csv("rep2_signal.csv")
+rep2 = rep2[-1]
+```
+
+```{r}
+#separate based on stimulus and variant
+rep1_mch_cch = rep1 %>% filter(Name == "mCherry_cch")
+rep1_005_cch = rep1 %>% filter(Name == "pNK005_cch")
+rep1_013_cch = rep1 %>% filter(Name == "pNK013_cch")
+
+rep1_mch_iono = rep1 %>% filter(Name == "mCherry_ionomycin")
+rep1_005_iono = rep1 %>% filter(Name == "pNK005_ionomycin")
+rep1_013_iono = rep1 %>% filter(Name == "pNK013_ionomycin")
+
+rep2_mch_cch = rep2 %>% filter(Name == "mCherry_cch")
+rep2_005_cch = rep2 %>% filter(Name == "pNK005_cch")
+rep2_013_cch = rep2 %>% filter(Name == "pNK013_cch")
+
+rep2_mch_iono = rep2 %>% filter(Name == "mCherry_ionomycin")
+rep2_005_iono = rep2 %>% filter(Name == "pNK005_ionomycin")
+rep2_013_iono = rep2 %>% filter(Name == "pNK013_ionomycin")
+
+```
+
+Figure 4B - Representative plot of MFI vs time for fluorescence microscopy measurements - add carbachol and use neg control
+```{r}
+rep_4b = ggplot()+ scale_x_continuous(limits = c(0,180), breaks = c(0,30,60,90,120,150,180))+ scale_y_continuous(limits = c(0,8000))+
+  geom_line(data = rep1_mch_cch, aes(x = ND.T, y = signal, color = "100uM Carbachol"), size =3)+
+  geom_line(data = rep1_mch_iono, aes(x = ND.T, y = signal, color = "2uM Ionomycin"), size =3)+
+  labs(x = "Time(s)", y = "Green MFI", color = "Condition") +
+  theme(text = element_text(size = 20))
+
+
+#ggsave("rep_4b.pdf", rep_4b, width = 10, useDingbats = F)
+```
+
+Figure 4C - fluorescence measurement curves for variants in carbachol and ionomycin
+```{r}
+#fluorescence measurements for cch of each replicate
+cch_rep1 = bind_rows(rep1_mch_cch, rep1_005_cch, rep1_013_cch) 
+cch_rep1 = cch_rep1 %>% mutate(rep = '1')
+cch_rep2 = bind_rows(rep2_mch_cch, rep2_005_cch, rep2_013_cch)
+cch_rep2 = cch_rep2 %>% mutate(rep = '2')
+cch_reps = bind_rows(cch_rep1, cch_rep2)
+cch_reps[cch_reps == "mCherry_cch"] = "Negative control"
+cch_reps[cch_reps == "pNK005_cch"] = "WT STIM1"
+cch_reps[cch_reps == "pNK013_cch"] = "R429C STIM1"
+
+b = ggplot(data = cch_reps, aes(x = ND.T, y = signal, color = Name))+theme_bw()+ scale_y_continuous(limits = c(0,2500))+ scale_x_continuous(limits= c(0,180), breaks = c(0,60,120,180))+
+  labs(x = "Time (s)", y = "Green MFI", color = "Variant")+ theme(text = element_text(size = 20)) + 
+  geom_line(size = 1) +
+  facet_wrap(~rep)
+
+#fluorescence measurements for ionomycin of each replicate
+iono_rep1 = bind_rows(rep1_mch_iono, rep1_005_iono, rep1_013_iono) 
+iono_rep1 = iono_rep1 %>% mutate(rep = '1')
+iono_rep2 = bind_rows(rep2_mch_iono, rep2_005_iono, rep2_013_iono)
+iono_rep2 = iono_rep2 %>% mutate(rep = '2')
+iono_reps = bind_rows(iono_rep1, iono_rep2)
+iono_reps[iono_reps == "mCherry_ionomycin"] = "Negative control"
+iono_reps[iono_reps == "pNK005_ionomycin"] = "WT STIM1"
+iono_reps[iono_reps == "pNK013_ionomycin"] = "R429C STIM1"
+
+c = ggplot(data = iono_reps, aes(x = ND.T, y = signal, color = Name))+ scale_y_continuous(limits = c(0,6000))+ scale_x_continuous(limits= c(0,180), breaks = c(0,60,120,180))+theme_bw()+ labs(x = "Time (s)", y = "Green MFI")+ theme(text = element_text(size = 20))+
+  geom_line(size = 1) +
+  facet_wrap(~rep)
+
+# ggsave("cch_reps.pdf", b, width = 7, height = 4)
+# ggsave("iono_reps.pdf", c, width = 7, height = 4)
+
+```
+
+Figure 4D - Differences in initial vs peak fluorescence for each variant for carbachol and ionomycin
+```{r}
+#100uM carbachol 
+#replicate 1
+comp_rep1_cch = data.frame(matrix(ncol = 3, nrow = 3))
+colnames(comp_rep1_cch) = c("variant", "min_value", "peak_value")
+comp_rep1_cch[1,1] = "Negative control"
+comp_rep1_cch[2,1] = "WT STIM1"
+comp_rep1_cch[3,1] = "R429C STIM1"
+comp_rep1_cch[1,2] = min(rep1_mch_cch$signal)
+comp_rep1_cch[2,2] = min(rep1_005_cch$signal)
+comp_rep1_cch[3,2] = min(rep1_013_cch$signal)
+comp_rep1_cch[1,3] = max(rep1_mch_cch$signal)
+comp_rep1_cch[2,3] = max(rep1_005_cch$signal)
+comp_rep1_cch[3,3] = max(rep1_013_cch$signal)
+comp_rep1_cchlg = comp_rep1_cch %>% melt() %>% mutate(replicate = '1')
+
+#replicate 2
+comp_rep2_cch = data.frame(matrix(ncol = 3, nrow = 3))
+colnames(comp_rep2_cch) = c("variant", "min_value", "peak_value")
+comp_rep2_cch[1,1] = "Negative control"
+comp_rep2_cch[2,1] = "WT STIM1"
+comp_rep2_cch[3,1] = "R429C STIM1"
+comp_rep2_cch[1,2] = min(rep2_mch_cch$signal)
+comp_rep2_cch[2,2] = min(rep2_005_cch$signal)
+comp_rep2_cch[3,2] = min(rep2_013_cch$signal)
+comp_rep2_cch[1,3] = max(rep2_mch_cch$signal)
+comp_rep2_cch[2,3] = max(rep2_005_cch$signal)
+comp_rep2_cch[3,3] = max(rep2_013_cch$signal)
+comp_rep2_cchlg = comp_rep2_cch %>% melt() %>% mutate(replicate = '2')
+
+comp_cch = bind_rows(comp_rep1_cchlg, comp_rep2_cchlg)
+
+cch_4c = ggplot(data = comp_cch, aes(x =variable, y= value, color = variant))+ 
+  geom_point(position=position_dodge(width = 0.25)) + 
+  stat_summary(geom = "point", shape = 8,  position = position_dodge(width = 0.25))+
+  scale_x_discrete(labels = c("Initial", "Peak"))+ 
+  labs(x = "Time point", y = "Green MFI", color = "Variant")+ 
+  theme(text=element_text(size=20), legend.position = "none")
+
+#ggsave("cch_4c.pdf", cch_4c, width = 4, height = 3)
+
+#ionomycin
+#replicate 1
+comp_rep1_iono = data.frame(matrix(ncol = 3, nrow = 3))
+colnames(comp_rep1_iono) = c("variant", "min_value", "peak_value")
+comp_rep1_iono[1,1] = "Negative control"
+comp_rep1_iono[2,1] = "WT STIM1"
+comp_rep1_iono[3,1] = "R429C STIM1"
+comp_rep1_iono[1,2] = min(rep1_mch_iono$signal)
+comp_rep1_iono[2,2] = min(rep1_005_iono$signal)
+comp_rep1_iono[3,2] = min(rep1_013_iono$signal)
+comp_rep1_iono[1,3] = max(rep1_mch_iono$signal)
+comp_rep1_iono[2,3] = max(rep1_005_iono$signal)
+comp_rep1_iono[3,3] = max(rep1_013_iono$signal)
+comp_rep1_ionolg = comp_rep1_iono %>% melt() %>% mutate(replicate = '1')
+
+# #replicate 2
+comp_rep2_iono = data.frame(matrix(ncol = 3, nrow = 3))
+colnames(comp_rep2_iono) = c("variant", "min_value", "peak_value")
+comp_rep2_iono[1,1] = "Negative control"
+comp_rep2_iono[2,1] = "WT STIM1"
+comp_rep2_iono[3,1] = "R429C STIM1"
+comp_rep2_iono[1,2] = min(rep2_mch_iono$signal)
+comp_rep2_iono[2,2] = min(rep2_005_iono$signal)
+comp_rep2_iono[3,2] = min(rep2_013_iono$signal)
+comp_rep2_iono[1,3] = max(rep2_mch_iono$signal)
+comp_rep2_iono[2,3] = max(rep2_005_iono$signal)
+comp_rep2_iono[3,3] = max(rep2_013_iono$signal)
+comp_rep2_ionolg = comp_rep2_iono %>% melt() %>% mutate(replicate = '2')
+
+comp_iono = bind_rows(comp_rep1_ionolg, comp_rep2_ionolg)
+
+iono_4c = ggplot(data = comp_iono, aes(x =variable, y= value, color = variant))+ scale_y_continuous(limits = c(0,6000))+
+ geom_point(position=position_dodge(width = 0.25)) + 
+  stat_summary(geom = "point", shape = 8,  position = position_dodge(width = 0.25))+
+  scale_x_discrete(labels = c("Initial", "Peak"))+ 
+  labs(x = "Time point", y = "Green MFI", color = "Variant")+ 
+  theme(text=element_text(size=20), legend.position = "none")
+
+#ggsave("iono_4c.pdf", iono_4c, width = 4, height = 3)
+
+```
+
+Figure 4E - normalized curves to peak values 
+```{r}
+#carbachol
+#rep 1
+rep1_cch_mch_decay = rep1_mch_cch %>% mutate(norm_peak = signal/801.414)
+rep1_cch_005_decay = rep1_005_cch %>% mutate(norm_peak = signal/max(signal))
+rep1_cch_013_decay = rep1_013_cch %>% mutate(norm_peak = signal/max(signal))
+rep1_cch_decay_normpeak = bind_rows(rep1_cch_mch_decay, rep1_cch_005_decay, rep1_cch_013_decay)
+
+#rep 2
+rep2_cch_mch_decay = rep2_mch_cch %>% mutate(norm_peak = signal/max(signal))
+rep2_cch_005_decay = rep2_005_cch %>% mutate(norm_peak = signal/max(signal))
+rep2_cch_013_decay = rep2_013_cch %>% mutate(norm_peak = signal/max(signal))
+rep2_cch_decay_normpeak = bind_rows(rep2_cch_mch_decay, rep2_cch_005_decay, rep2_cch_013_decay)
+
+rep_normpeak_decay = bind_rows(rep1_cch_decay_normpeak, rep2_cch_decay_normpeak)
+rep_normpeak_decay[rep_normpeak_decay == "mCherry_cch"] = "Negative control"
+rep_normpeak_decay[rep_normpeak_decay == "pNK005_cch"] = "WT STIM1"
+rep_normpeak_decay[rep_normpeak_decay == "pNK013_cch"] = "R429C STIM1"
+
+cch_normpeak_4d = ggplot(data = rep_normpeak_decay, aes(x = ND.T, y = norm_peak, color = Name))+theme_bw()+ scale_y_continuous(breaks = c(0,0.5,1))+ scale_x_continuous(breaks = c(0, 60, 120, 180))+ 
+  labs(x = "Time (s)", y = "Green MFI", color = "Variant")+ theme(text = element_text(size = 20)) + 
+  geom_line(size = 1) +
+  facet_wrap(~rep)
+#ionomycin
+#rep 1
+rep1_iono_mch_decay = rep1_mch_iono %>% mutate(norm_peak = signal/max(signal))
+rep1_iono_005_decay = rep1_005_iono %>% mutate(norm_peak = signal/max(signal))
+rep1_iono_013_decay = rep1_013_iono %>% mutate(norm_peak = signal/max(signal))
+rep1_iono_decay_normpeak = bind_rows(rep1_iono_mch_decay, rep1_iono_005_decay, rep1_iono_013_decay)
+
+#rep 2
+rep2_iono_mch_decay = rep2_mch_iono %>% mutate(norm_peak = signal/max(signal))
+rep2_iono_005_decay = rep2_005_iono %>% mutate(norm_peak = signal/max(signal))
+rep2_iono_013_decay = rep2_013_iono %>% mutate(norm_peak = signal/max(signal))
+rep2_iono_decay_normpeak = bind_rows(rep2_iono_mch_decay, rep2_iono_005_decay, rep2_iono_013_decay)
+
+rep_normpeak_decay_iono = bind_rows(rep1_iono_decay_normpeak, rep2_iono_decay_normpeak)
+rep_normpeak_decay_iono[rep_normpeak_decay_iono == "mCherry_ionomycin"] = "Negative control"
+rep_normpeak_decay_iono[rep_normpeak_decay_iono == "pNK005_ionomycin"] = "WT STIM1"
+rep_normpeak_decay_iono[rep_normpeak_decay_iono == "pNK013_ionomycin"] = "R429C STIM1"
+
+iono_normpeak_4d = ggplot(data = rep_normpeak_decay_iono, aes(x = ND.T, y = norm_peak, color = Name))+theme_bw()+ scale_y_continuous(breaks = c(0,0.5,1))+ scale_x_continuous(breaks = c(0, 60, 120, 180))+ 
+  labs(x = "Time (s)", y = "Green MFI", color = "Variant")+ theme(text = element_text(size = 20)) + 
+  geom_line(size = 1) +
+  facet_wrap(~rep)
+
+# ggsave("cch_normpeak_4d.pdf", cch_normpeak_4d, width = 7, height = 4)
+# ggsave("iono_normpeak_4d.pdf", iono_normpeak_4d, width = 7, height = 4)
+
+grid.arrange(cch_normpeak_4d, iono_normpeak_4d)
+```
+
+```{r}
+sessionInfo()
+```
+
