@@ -1330,12 +1330,12 @@ Figure 4B - Representative plot of MFI vs time for fluorescence microscopy measu
 rep_4b = ggplot() +
   scale_x_continuous(limits = c(0,180), breaks = c(0,30,60,90,120,150,180)) + 
   scale_y_continuous(limits = c(0,2500))+
-  geom_point(data = rep1_mch_cch, aes(x = ND.T, y = signal, color = "100uM Carbachol"), size =3, alpha = 0.2)+
-  geom_point(data = rep1_mch_iono, aes(x = ND.T, y = signal, color = "2uM Ionomycin"), size =3, alpha = 0.2)+
+  geom_point(data = rep1_mch_cch, aes(x = ND.T, y = signal, color = "100uM Carbachol"), size =3, alpha = 0.2, color = "black")+
+  geom_point(data = rep1_mch_iono, aes(x = ND.T, y = signal, color = "2uM Ionomycin"), size =3, alpha = 0.2, color = "orange")+
   labs(x = "Time (seconds)", y = "Green MFI", color = "Condition") +
-  theme(text = element_text(size = 20), legend.position = "top")
+  theme(legend.position = "top")
 rep_4b
-ggsave("Plots/rep_4b.pdf", rep_4b, width = 4, height = 3, useDingbats = F)
+ggsave("Plots/rep_4b.pdf", rep_4b, width = 3.5, height = 1.75, useDingbats = F)
 ```
 
 Figure 4C - fluorescence measurement curves for variants in carbachol and ionomycin
@@ -1390,7 +1390,7 @@ comp_rep1_cch[3,1] = "R429C STIM1"
 comp_rep1_cch[1,2] = mean(rep1_mch_cch$signal[1:30]) #min(rep1_mch_cch$signal)
 comp_rep1_cch[2,2] = mean(rep1_005_cch$signal[1:30]) #min(rep1_005_cch$signal)
 comp_rep1_cch[3,2] = mean(rep1_013_cch$signal[1:30]) #min(rep1_013_cch$signal)
-comp_rep1_cch[1,3] =  #max(rep1_mch_cch$signal)
+comp_rep1_cch[1,3] = quantile(rep1_mch_cch$signal, 0.95) #max(rep1_mch_cch$signal)
 comp_rep1_cch[2,3] = quantile(rep1_005_cch$signal, 0.95) #max(rep1_005_cch$signal)
 comp_rep1_cch[3,3] = quantile(rep1_013_cch$signal, 0.95) #max(rep1_013_cch$signal)
 comp_rep1_cchlg = comp_rep1_cch %>% melt() %>% mutate(replicate = '1')
@@ -1462,23 +1462,30 @@ ggsave("Plots/iono_4c.pdf", iono_4c, width = 4, height = 3)
 
 
 ## Another version of the plots, from the way I do it (KAM)
-cch4c_version2 <- ggplot() + theme(legend.position = "top", panel.grid.major.x = element_blank()) + labs(title = "Carbachol", x = NULL, y = "Mean fluorescent intensity") +
+
+comp_cch$variant <- factor(comp_cch$variant, levels = c("Negative control", "WT STIM1", "R429C STIM1"))
+
+comp_iono$variant <- factor(comp_iono$variant, levels = c("Negative control", "WT STIM1", "R429C STIM1"))
+
+cch4c_version2 <- ggplot() + theme(legend.position = "top", panel.grid.major.x = element_blank(), axis.text.x.bottom = element_text(angle = 45, hjust = 1, vjust = 1)) + 
+  labs(title = "Carbachol", x = NULL, y = "Mean fluorescent intensity") +
   scale_y_continuous(limits = c(-200,6000)) +
   geom_hline(yintercept = 0, alpha = 0.5) + 
   geom_point(data = comp_cch, aes(x = variable, y = value, color = variant), position = position_dodge(width = 0.6)) +
-  geom_point(data = comp_cch %>% group_by(variant, variable) %>% summarize(value = mean(value)), aes(x = variable, y = value, color = variant), position = position_dodge(width = 0.6), shape = 95, size = 8)
-#cch4c_version2
+  geom_point(data = comp_cch %>% group_by(variant, variable) %>% summarize(value = mean(value)), aes(x = variable, y = value, color = variant), position = position_dodge(width = 0.6), shape = 95, size = 5)
+cch4c_version2
 
-iono4c_version2 <- ggplot() + theme(legend.position = "top", panel.grid.major.x = element_blank()) + labs(title = "Ionomycin", x = NULL, y = "Mean fluorescent intensity") +
+iono4c_version2 <- ggplot() + theme(legend.position = "top", panel.grid.major.x = element_blank(), axis.text.x.bottom = element_text(angle = 45, hjust = 1, vjust = 1)) + 
+  labs(title = "Ionomycin", x = NULL, y = "Mean fluorescent intensity") +
   scale_y_continuous(limits = c(-200,6000)) +
   geom_hline(yintercept = 0, alpha = 0.5) + 
   geom_point(data = comp_iono, aes(x = variable, y = value, color = variant), position = position_dodge(width = 0.6)) +
-  geom_point(data = comp_iono %>% group_by(variant, variable) %>% summarize(value = mean(value)), aes(x = variable, y = value, color = variant), position = position_dodge(width = 0.6), shape = 95, size = 8)
+  geom_point(data = comp_iono %>% group_by(variant, variable) %>% summarize(value = mean(value)), aes(x = variable, y = value, color = variant), position = position_dodge(width = 0.6), shape = 95, size = 5)
 #iono4c_version2
 
 peak_figure <- cch4c_version2 | iono4c_version2
 peak_figure
-ggsave(file = "Plots/Peak_value.pdf", peak_figure, height = 2.5, width = 5)
+ggsave(file = "Plots/Peak_value.pdf", peak_figure, height = 2.5, width = 3)
 ```
 
 Figure 4E - normalized curves to peak values 
@@ -1511,6 +1518,8 @@ cch_normpeak_4d
 
 rep_normpeak_decay2 <- rep_normpeak_decay %>% group_by(Name, ND.T) %>% summarize(mean_normpeak_decay = mean(norm_peak))
 
+rep_normpeak_decay2$Name <- factor(rep_normpeak_decay2$Name, levels = c("Negative control", "WT STIM1", "R429C STIM1"))
+
 cch_normpeak_average_decay <- ggplot() + theme(legend.position = "top") +
   labs(x = "Time (seconds)", y = "Normalized fluorescence", title = "Carbachol") +
   geom_hline(yintercept = 0, alpha = 0.5) + 
@@ -1532,9 +1541,9 @@ rep2_iono_013_decay = rep2_013_iono %>% mutate(norm_peak = signal/quantile(signa
 rep2_iono_decay_normpeak = bind_rows(rep2_iono_mch_decay, rep2_iono_005_decay, rep2_iono_013_decay)
 
 rep_normpeak_decay_iono = bind_rows(rep1_iono_decay_normpeak, rep2_iono_decay_normpeak)
-rep_normpeak_decay_iono[rep_normpeak_decay_iono == "mCherry_iono"] = "Negative control"
-rep_normpeak_decay_iono[rep_normpeak_decay_iono == "pNK005_iono"] = "WT STIM1"
-rep_normpeak_decay_iono[rep_normpeak_decay_iono == "pNK013_iono"] = "R429C STIM1"
+rep_normpeak_decay_iono[rep_normpeak_decay_iono$Name == "mCherry_ionomycin","Name"] = "Negative control"
+rep_normpeak_decay_iono[rep_normpeak_decay_iono$Name == "pNK005_ionomycin","Name"] = "WT STIM1"
+rep_normpeak_decay_iono[rep_normpeak_decay_iono$Name == "pNK013_ionomycin","Name"] = "R429C STIM1"
 
 iono_normpeak_4d = ggplot(data = rep_normpeak_decay_iono, aes(x = ND.T, y = norm_peak, color = Name))+theme_bw()+ scale_y_continuous(breaks = c(0,0.5,1))+ scale_x_continuous(breaks = c(0, 60, 120, 180))+ 
   labs(x = "Time (s)", y = "Green MFI", color = "Variant")+ theme(text = element_text(size = 20)) + 
@@ -1545,6 +1554,9 @@ iono_normpeak_4d
 ## Kenny mods
 
 rep_normpeak_decay_iono2 <- rep_normpeak_decay_iono %>% group_by(Name, ND.T) %>% summarize(mean_normpeak_decay = mean(norm_peak))
+
+rep_normpeak_decay_iono2$Name <- factor(rep_normpeak_decay_iono2$Name, levels = c("Negative control", "WT STIM1", "R429C STIM1"))
+
 
 iono_normpeak_average_decay <- ggplot() + theme(legend.position = "top") +
   labs(x = "Time (seconds)", y = "Normalized fluorescence", title = "Ionomycin") +
@@ -1563,18 +1575,8 @@ ggsave(file = "Plots/Decay_curves.pdf", Decay_curves, height = 2.5, width = 5)
 ```
 
 
-
-
-
-
-
-
-
-
-
-
-
-```{r}
+## Figure 5 - Vif experiments
+```{r Import the vif orientations data}
 
 vif_apobec <- read.csv(file = "data/flow/Vif_Apobec/Orientations.csv")
 vif_apobec_fusions <- vif_apobec %>% filter(gene != "None")
@@ -1605,12 +1607,13 @@ colnames(va_rep1_melt) <- c("vif","apobec","normalized")
 va_rep1_melt$apobec <- factor(va_rep1_melt$apobec, levels = c("EGFP","A3G.EGFP","EGFP.A3D","EGFP.A3F","EGFP.A3H2"))
 va_rep1_melt$vif <- factor(va_rep1_melt$vif, levels = rev(c("WT","STOP","A149Y","W11A","F39A","H43E")))
 
-ggplot() + theme_bw() +
+vif_apobec_heatmap <- ggplot() + theme(axis.text.x.bottom = element_text(angle = 45, hjust = 1, vjust = 1)) +
   labs(x = "EGFP or Apobec fusion", y = "HIV-1 Vif variant") +
   #scale_fill_gradient2(low = "white", mid = "darkgreen", high = "red", na.value = "brown4", limits = c(0.25,1.3), midpoint = 1) + 
   scale_fill_gradient2(low = "white", mid = "darkgreen", high = "red", na.value = "green4", limits = c(log2(0.25),log2(1.3)), midpoint = 1) + 
   geom_tile(data = va_rep1_melt, aes(x = apobec, y = vif, fill = log2(normalized)))
-
+vif_apobec_heatmap
+ggsave(file = "Plots/Vif_apobec_heatmap.pdf", vif_apobec_heatmap, height = 2, width = 3.5)
 ```
 
 
