@@ -1,7 +1,7 @@
 ---
 title: "Recombinastics_analysis"
-author: "Kenneth Matreyek"
-date: "6/17/2020"
+author: "Kenneth Matreyek and Nisha D. Kamath"
+date: "initialized 6/17/2020 - last updated 6/7/2023"
 output: github_document
 ---
 
@@ -20,11 +20,11 @@ library(patchwork)
 theme_set(theme_bw())
 theme_update(panel.grid.minor = element_blank())
 
-#R.Version()
+R.Version()
 ```
 
-## Look at the recombination method test dasta
-```{r data import, fig.height = 4, fig.width = 6}
+## Look at the recombination method test data. Note: this is not part of the manuscript
+```{r Testing recombination efficiency in two different plate formats, fig.height = 4, fig.width = 6}
 methods_data <- read.csv(file = "data/Recombination_method_tests.csv", header = T)
 
 methods_data_replicates <- ncol(methods_data) - 5
@@ -64,10 +64,10 @@ Recombination_method_plot <- ggplot() +
              size = 0.9, position=position_dodge(width=0.3), alpha = 0.4)
 print(Recombination_method_plot)
 ```
-
-
-# This next chunk is for testing the orthogonality of the GT and GA Bxb1 sequences
-```{r Stuff, fig.height = 2, fig.width = 3}
+## GT and GA Ortholognality
+## Relevant to Figure 1
+ This next chunk is for testing the orthogonality of the GT and GA Bxb1 sequences
+```{r Initial testing of orthogonality of GT and GA recombination site pairs, fig.height = 2, fig.width = 3}
 rep_1_frame <- read.csv(file = "data/Orthog_recomb/GT_vs_GA_200206.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
 rep_2_frame <- read.csv(file = "data/Orthog_recomb/GT_vs_GA_200213.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
 rep_3_frame <- read.csv(file = "data/Orthog_recomb/GT_vs_GA_200219.csv", header = T, stringsAsFactors = F) %>% arrange(attp, bxb1, mix) %>% filter(bxb1 != "none")
@@ -93,9 +93,9 @@ upper_conf2 <- cbind(label_frame,upper_conf)
 lower_conf2 <- cbind(label_frame,lower_conf)
 #ga_data_filtered$attp <- factor(ga_data_filtered$attp, levels = c("gt","ga"))
 
-upper_conf2_melted <- melt(upper_conf2[,c("comboname","attp","gfp","mcherry")], by = c("comboname","attp"))
-lower_conf2_melted <- melt(lower_conf2[,c("comboname","attp","gfp","mcherry")], by = c("comboname","attp"))
-means2_melted <- melt(means2[,c("comboname","attp","gfp","mcherry")], by = c("comboname","attp"))
+upper_conf2_melted <- melt(upper_conf2[,c("comboname","attp","gfp","mcherry")], id = c("comboname","attp"))
+lower_conf2_melted <- melt(lower_conf2[,c("comboname","attp","gfp","mcherry")], id = c("comboname","attp"))
+means2_melted <- melt(means2[,c("comboname","attp","gfp","mcherry")], id = c("comboname","attp"))
 
 
 green_red_colorscale <- c(gfp = "green", mcherry = "red")
@@ -114,577 +114,9 @@ print(GT_vs_GA_plot)
 
 ggsave(file = "Plots/GT_vs_GA_plot.pdf", GT_vs_GA_plot, height = 1.8, width = 3.8)
 ```
+## Flanking recombinase sites to excise unwanted bacterial DNA sequences
+## Relevant to Figure 2
 
-
-```{r Diving into clone2 data}
-c2_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_none.csv.gz")
-c2_none <- c2_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_none) <- c("fsc","ssc","blu","grn","red","nir")
-c2_none$clone <- "c2"; c2_none$treatment <- "none"
-c2_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_recomb.csv.gz")
-c2_recomb <- c2_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_recomb) <- c("fsc","ssc","blu","grn","red","nir")
-c2_recomb$clone <- "c2"; c2_recomb$treatment <- "recomb"
-c2_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_ap1903.csv.gz")
-c2_ap1903 <- c2_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
-c2_ap1903$clone <- "c2"; c2_ap1903$treatment <- "ap1903"
-
-
-cell_number <- 2000
-combined_data <- rbind(c2_none[1:cell_number,], c2_recomb[1:cell_number,], c2_ap1903[1:cell_number,])
-combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
-
-plot_alpha <- 0.2
-axis_limits <- c(10,1e6)
-
-custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
-
-c2_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
-
-c2_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
-
-c2_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
-
-c2_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
-
-c2_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
-
-c2_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
-  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
-c2_gr_plot
-
-c2_arranged_plot <- grid.arrange(c2_bn_plot, c2_bg_plot, c2_br_plot, c2_ng_plot, c2_nr_plot, c2_gr_plot, ncol=6, nrow=1)
-
-ggsave(file = "plots/201002/c2_arranged_plot.png", c2_arranged_plot, height = 3, width = 18)
-
-paste("Percent double positive before selection:", round(sum(c2_recomb$grn >= 3e4 & c2_recomb$red >= 3e4) / nrow(c2_recomb) * 100,2))
-paste("Percent double positive after selection:", round(sum(c2_ap1903$grn >= 3e4 & c2_ap1903$red >= 3e4) / nrow(c2_ap1903) * 100,2))
-```
-
-```{r Diving into clone6 data}
-c6_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_none.csv.gz")
-c6_none <- c6_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_none) <- c("fsc","ssc","blu","grn","red","nir")
-c6_none$clone <- "c6"; c6_none$treatment <- "none"
-c6_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_recomb.csv.gz")
-c6_recomb <- c6_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_recomb) <- c("fsc","ssc","blu","grn","red","nir")
-c6_recomb$clone <- "c6"; c6_recomb$treatment <- "recomb"
-c6_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_ap1903.csv.gz")
-c6_ap1903 <- c6_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
-c6_ap1903$clone <- "c6"; c6_ap1903$treatment <- "ap1903"
-
-
-cell_number <- 2000
-combined_data <- rbind(c6_none[1:cell_number,], c6_recomb[1:cell_number,], c6_ap1903[1:cell_number,])
-combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
-
-plot_alpha <- 0.2
-axis_limits <- c(10,1e6)
-
-custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
-
-c6_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
-
-c6_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
-
-c6_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
-
-c6_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
-
-c6_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
-
-c6_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
-  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
-c6_gr_plot
-
-c6_arranged_plot <- grid.arrange(c6_bn_plot, c6_bg_plot, c6_br_plot, c6_ng_plot, c6_nr_plot, c6_gr_plot, ncol=6, nrow=1)
-
-ggsave(file = "plots/201002/c6_arranged_plot.png", c6_arranged_plot, height = 3, width = 18)
-
-paste("Percent double positive before selection:", round(sum(c6_recomb$grn >= 3e4 & c6_recomb$red >= 3e4) / nrow(c6_recomb) * 100,2))
-paste("Percent double positive after selection:", round(sum(c6_ap1903$grn >= 3e4 & c6_ap1903$red >= 3e4) / nrow(c6_ap1903) * 100,2))
-```
-
-```{r Diving into clone11 data}
-c11_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_none.csv.gz")
-c11_none <- c11_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_none) <- c("fsc","ssc","blu","grn","red","nir")
-c11_none$clone <- "c11"; c11_none$treatment <- "none"
-c11_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_recomb.csv.gz")
-c11_recomb <- c11_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_recomb) <- c("fsc","ssc","blu","grn","red","nir")
-c11_recomb$clone <- "c11"; c11_recomb$treatment <- "recomb"
-c11_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_ap1903.csv.gz")
-c11_ap1903 <- c11_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
-c11_ap1903$clone <- "c11"; c11_ap1903$treatment <- "ap1903"
-
-
-cell_number <- 2000
-combined_data <- rbind(c11_none[1:cell_number,], c11_recomb[1:cell_number,], c11_ap1903[1:cell_number,])
-combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
-
-plot_alpha <- 0.2
-axis_limits <- c(10,1e6)
-
-custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
-
-c11_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
-
-c11_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
-
-c11_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
-
-c11_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
-
-c11_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
-
-c11_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
-  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
-c11_gr_plot
-
-c11_arranged_plot <- grid.arrange(c11_bn_plot, c11_bg_plot, c11_br_plot, c11_ng_plot, c11_nr_plot, c11_gr_plot, ncol=6, nrow=1)
-
-ggsave(file = "plots/201002/c11_arranged_plot.png", c11_arranged_plot, height = 3, width = 18)
-
-paste("Percent double positive before selection:", round(sum(c11_recomb$grn >= 3e4 & c11_recomb$red >= 3e4) / nrow(c11_recomb) * 100,2))
-paste("Percent double positive after selection:", round(sum(c11_ap1903$grn >= 3e4 & c11_ap1903$red >= 3e4) / nrow(c11_ap1903) * 100,2))
-```
-
-
-##### THIS IS NOW THE REPEAT SET OF DATA
-
-```{r Diving into clone2 data}
-c2_none_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone2_none.csv.gz")
-c2_none <- c2_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_none) <- c("fsc","ssc","blu","grn","red","nir")
-c2_none$clone <- "c2"; c2_none$treatment <- "none"
-c2_recomb_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone2_recomb.csv.gz")
-c2_recomb <- c2_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_recomb) <- c("fsc","ssc","blu","grn","red","nir")
-c2_recomb$clone <- "c2"; c2_recomb$treatment <- "recomb"
-c2_ap1903_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone2_ap1903.csv.gz")
-c2_ap1903 <- c2_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
-c2_ap1903$clone <- "c2"; c2_ap1903$treatment <- "ap1903"
-
-
-cell_number <- 2000
-combined_data <- rbind(c2_none[1:cell_number,], c2_recomb[1:cell_number,], c2_ap1903[1:cell_number,])
-combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
-
-plot_alpha <- 0.2
-axis_limits <- c(10,1e6)
-
-custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
-
-c2_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
-
-c2_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
-
-c2_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
-
-c2_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
-
-c2_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
-
-c2_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
-  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
-c2_gr_plot
-
-c2_arranged_plot <- grid.arrange(c2_bn_plot, c2_bg_plot, c2_br_plot, c2_ng_plot, c2_nr_plot, c2_gr_plot, ncol=6, nrow=1)
-
-ggsave(file = "plots/201016/c2_arranged_plot.png", c2_arranged_plot, height = 3, width = 18)
-
-paste("Percent double positive before selection:", round(sum(c2_recomb$grn >= 3e4 & c2_recomb$red >= 3e4) / nrow(c2_recomb) * 100,2))
-paste("Percent double positive after selection:", round(sum(c2_ap1903$grn >= 3e4 & c2_ap1903$red >= 3e4) / nrow(c2_ap1903) * 100,2))
-```
-
-```{r Diving into clone6 data}
-c6_none_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone6_none.csv.gz")
-c6_none <- c6_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_none) <- c("fsc","ssc","blu","grn","red","nir")
-c6_none$clone <- "c6"; c6_none$treatment <- "none"
-c6_recomb_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone6_recomb.csv.gz")
-c6_recomb <- c6_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_recomb) <- c("fsc","ssc","blu","grn","red","nir")
-c6_recomb$clone <- "c6"; c6_recomb$treatment <- "recomb"
-c6_ap1903_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone6_ap1903.csv.gz")
-c6_ap1903 <- c6_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
-c6_ap1903$clone <- "c6"; c6_ap1903$treatment <- "ap1903"
-
-
-cell_number <- 2000
-combined_data <- rbind(c6_none[1:cell_number,], c6_recomb[1:cell_number,], c6_ap1903[1:cell_number,])
-combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
-
-plot_alpha <- 0.2
-axis_limits <- c(10,1e6)
-
-custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
-
-c6_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
-
-c6_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
-
-c6_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
-
-c6_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
-
-c6_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
-
-c6_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
-  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
-c6_gr_plot
-
-c6_arranged_plot <- grid.arrange(c6_bn_plot, c6_bg_plot, c6_br_plot, c6_ng_plot, c6_nr_plot, c6_gr_plot, ncol=6, nrow=1)
-
-ggsave(file = "plots/201016/c6_arranged_plot.png", c6_arranged_plot, height = 3, width = 18)
-
-paste("Percent double positive before selection:", round(sum(c6_recomb$grn >= 3e4 & c6_recomb$red >= 3e4) / nrow(c6_recomb) * 100,2))
-paste("Percent double positive after selection:", round(sum(c6_ap1903$grn >= 3e4 & c6_ap1903$red >= 3e4) / nrow(c6_ap1903) * 100,2))
-```
-
-```{r Diving into clone11 data}
-c11_none_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone11_none.csv.gz")
-c11_none <- c11_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_none) <- c("fsc","ssc","blu","grn","red","nir")
-c11_none$clone <- "c11"; c11_none$treatment <- "none"
-c11_recomb_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone11_recomb.csv.gz")
-c11_recomb <- c11_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_recomb) <- c("fsc","ssc","blu","grn","red","nir")
-c11_recomb$clone <- "c11"; c11_recomb$treatment <- "recomb"
-c11_ap1903_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone11_ap1903.csv.gz")
-c11_ap1903 <- c11_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
-c11_ap1903$clone <- "c11"; c11_ap1903$treatment <- "ap1903"
-
-
-cell_number <- 2000
-combined_data <- rbind(c11_none[1:cell_number,], c11_recomb[1:cell_number,], c11_ap1903[1:cell_number,])
-combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
-
-plot_alpha <- 0.2
-axis_limits <- c(10,1e6)
-
-custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
-
-c11_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
-
-c11_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
-
-c11_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
-
-c11_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
-
-c11_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
-
-c11_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
-  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
-c11_gr_plot
-
-c11_arranged_plot <- grid.arrange(c11_bn_plot, c11_bg_plot, c11_br_plot, c11_ng_plot, c11_nr_plot, c11_gr_plot, ncol=6, nrow=1)
-
-ggsave(file = "plots/201016/c11_arranged_plot.png", c11_arranged_plot, height = 3, width = 18)
-
-paste("Percent double positive before selection:", round(sum(c11_recomb$grn >= 3e4 & c11_recomb$red >= 3e4) / nrow(c11_recomb) * 100,2))
-paste("Percent double positive after selection:", round(sum(c11_ap1903$grn >= 3e4 & c11_ap1903$red >= 3e4) / nrow(c11_ap1903) * 100,2))
-```
-
-
-```{r Clone11 plots now for paper}
-
-plot_alpha <- 0.2
-axis_limits <- c(10,1e6)
-
-c11_none_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data %>% filter(treatment == "none"), aes(x = blu, y = nir), alpha = plot_alpha)
-c11_none_bn_plot
-
-c11_recomb_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "recomb") + 
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data %>% filter(treatment == "recomb"), aes(x = blu, y = nir), alpha = plot_alpha)
-c11_recomb_bn_plot
-
-c11_ap1903_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "ap1903") + 
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data %>% filter(treatment == "ap1903"), aes(x = blu, y = nir), alpha = plot_alpha)
-c11_ap1903_bn_plot
-
-c11_none_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data %>% filter(treatment == "none"), aes(x = grn, y = red), alpha = plot_alpha)
-c11_none_gr_plot
-
-c11_recomb_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "recomb") + 
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data %>% filter(treatment == "recomb"), aes(x = grn, y = red), alpha = plot_alpha)
-c11_recomb_gr_plot
-
-c11_ap1903_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "ap1903") + 
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = combined_data %>% filter(treatment == "ap1903"), aes(x = grn, y = red), alpha = plot_alpha)
-c11_ap1903_gr_plot
-
-
-c11_arranged_plot <- grid.arrange(c11_bn_plot, c11_bg_plot, c11_br_plot, c11_ng_plot, c11_nr_plot, c11_gr_plot, ncol=6, nrow=1)
-
-ggsave(file = "plots/201016/c11_arranged_plot.png", c11_arranged_plot, height = 3, width = 18)
-
-paste("Percent double positive before selection:", round(sum(c11_recomb$grn >= 3e4 & c11_recomb$red >= 3e4) / nrow(c11_recomb) * 100,2))
-paste("Percent double positive after selection:", round(sum(c11_ap1903$grn >= 3e4 & c11_ap1903$red >= 3e4) / nrow(c11_ap1903) * 100,2))
-
-```
-
-## TRYING TO PLOT THE DOUBLE LANDING PAD COLORS
-
-```{r Principal component analysis}
-# http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/118-principal-component-analysis-in-r-prcomp-vs-princomp/
-
-combined_data <- rbind(c11_none[1:2000,], c11_recomb[1:2000,], c11_ap1903[1:2000,])
-
-ggplot() + theme_bw() + scale_x_log10() + scale_y_log10() + geom_point(data = combined_data, aes(x = red, y = nir))
-
-combined_data$zir <- combined_data$nir - combined_data$red * 0.01
-ggplot() + theme_bw() + scale_x_log10() + scale_y_log10() + geom_point(data = combined_data, aes(x = red, y = zir))
-
-combined_for_pca <- combined_data[,c("blu","grn","red","zir")]
-
-clone2.pca <- prcomp(combined_for_pca, center = TRUE,scale. = TRUE)
-fviz_eig(clone2.pca)
-
-autoplot(clone2.pca, alpha = 0.2) +
-  scale_x_continuous(limits = c(-0.3,0.3)) + scale_y_continuous(limits = c(-0.3,0.3))
-
-fviz_pca_var(clone2.pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-
-clone2.pca$rotation
-
-pca2 <- data.frame("pc1" = clone2.pca$x[,1], "pc2" = clone2.pca$x[,2])
-
-pca2$treatment <- combined_data[,"treatment"]
-
-pca2$treatment <- factor(pca2$treatment, levels = c("none","recomb","ap1903"))
-custom_color_scale <- c("none" = "magenta", "ap1903" = "cyan", "recomb" = "green")
-
-ggplot() + theme_bw() + theme(panel.grid.minor = element_blank()) + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_continuous(limits = c(-5,5)) +
-  scale_y_continuous(limits = c(-3,2)) +
-  geom_point(data = pca2, aes(x = pc1, y = pc2, color = treatment), alpha = 0.05)
-
-ggplot() + theme_bw() + theme(panel.grid.minor = element_blank()) + 
-  scale_color_manual(values = custom_color_scale) +
-  scale_x_continuous(limits = c(-5,5)) +
-  scale_y_continuous(limits = c(-3,2)) +
-  geom_point(data = pca2, aes(x = pc1, y = pc2), alpha = 0.05) +
-  facet_grid(rows = vars(treatment))
-
-pca_details <- cbind(combined_for_pca,pca2)
-
-pca_details_melted <- melt(pca_details[,c("treatment","blu","grn","red","zir")], id. = "treatment")
-
-ggplot() + theme_bw() +
-  scale_x_log10() + 
-  geom_histogram(data = pca_details_melted, aes(x = value)) +
-  facet_grid(cols = vars(variable))
-
-blu_cutoff <- 1e3
-grn_cutoff <- 1e4
-red_cutoff <- 1e4
-zir_cutoff <- 1e3
-
-ggplot() + theme_bw() + scale_x_log10() + geom_histogram(data = pca_details, aes(x = blu)) + geom_vline(xintercept = blu_cutoff)
-ggplot() + theme_bw() + scale_x_log10() + geom_histogram(data = pca_details, aes(x = grn)) + geom_vline(xintercept = grn_cutoff)
-ggplot() + theme_bw() + scale_x_log10() + geom_histogram(data = pca_details, aes(x = red)) + geom_vline(xintercept = red_cutoff)
-ggplot() + theme_bw() + scale_x_log10() + geom_histogram(data = pca_details, aes(x = zir)) + geom_vline(xintercept = zir_cutoff)
-
-pca_details$blu2 <- 0
-pca_details$grn2 <- 0
-pca_details$red2 <- 0
-pca_details$zir2 <- 0
-
-for(x in 1:nrow(pca_details)){
-  if(pca_details$blu[x] > blu_cutoff){pca_details$blu2[x] <- 1}
-  if(pca_details$grn[x] > grn_cutoff){pca_details$grn2[x] <- 1}
-  if(pca_details$red[x] > red_cutoff){pca_details$red2[x] <- 1}
-  if(pca_details$zir[x] > zir_cutoff){pca_details$zir2[x] <- 1}
-}
-
-pca_details$bgrn <- paste(pca_details$blu2,pca_details$grn2,pca_details$red2,pca_details$zir2,sep="")
-
-bgrn_table <- data.frame(table(pca_details$bgrn)) %>% arrange(desc(Freq))
-
-pca_details$label <- "Unannotated"
-
-for(x in 1:nrow(pca_details)){
-  if(pca_details$bgrn[x] == "1001"){pca_details$label[x] <- "Unrecombined"}
-  if(pca_details$bgrn[x] == "0110"){pca_details$label[x] <- "Doubly_recombined"}
-  if(pca_details$bgrn[x] == "1010"){pca_details$label[x] <- "GA_only"}
-  if(pca_details$bgrn[x] == "0101"){pca_details$label[x] <- "GT_only"}
-}
-
-custom_color_scale2 <- c("Unannotated" = "black", "Unrecombined" = "blue", "Doubly_recombined" = "purple", "GA_only" = "red", "GT_only" = "green")
-
-Clone11_PCA_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank()) + 
-  scale_color_manual(values = custom_color_scale2) +
-  scale_x_continuous(limits = c(-5,5)) +
-  scale_y_continuous(limits = c(-3,2)) +
-  geom_point(data = pca_details, aes(x = pc1, y = pc2, color = label), alpha = 0.1, size = 0.5) +
-  facet_grid(rows = vars(treatment))
-Clone11_PCA_plot
-ggsave(file = "plots/Clone11_PCA_plot.pdf", Clone11_PCA_plot, height = 3.4, width = 4.5)
-
-```
-
-```{r Individual flow plots}
-plot_alpha = 0.02
-point_size = 0.25
-
-c11_none_bz_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = pca_details %>% filter(treatment == "none"), aes(x = blu, y = zir), alpha = plot_alpha, size = point_size)
-c11_none_bz_plot
-
-c11_recomb_bz_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = pca_details %>% filter(treatment == "recomb"), aes(x = blu, y = zir), alpha = plot_alpha, size = point_size)
-c11_recomb_bz_plot
-
-c11_ap1903_bz_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = pca_details %>% filter(treatment == "ap1903"), aes(x = blu, y = zir), alpha = plot_alpha, size = point_size)
-c11_ap1903_bz_plot
-
-c11_none_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = pca_details %>% filter(treatment == "none"), aes(x = grn, y = red), alpha = plot_alpha, size = point_size)
-c11_none_gr_plot
-
-c11_recomb_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "recomb") + 
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = pca_details %>% filter(treatment == "recomb"), aes(x = grn, y = red), alpha = plot_alpha, size = point_size)
-c11_recomb_gr_plot
-
-c11_ap1903_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "ap1903") + 
-  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
-  geom_point(data = pca_details %>% filter(treatment == "ap1903"), aes(x = grn, y = red), alpha = plot_alpha, size = point_size)
-c11_ap1903_gr_plot
-
-c11_arranged_plot <- grid.arrange(c11_none_bz_plot, c11_recomb_bz_plot, c11_ap1903_bz_plot, c11_none_gr_plot, c11_recomb_gr_plot, c11_ap1903_gr_plot, ncol=3, nrow=2)
-
-ggsave(file = "plots/c11_arranged_plot.pdf", c11_arranged_plot, height = 2.2, width = 4.1)
-
-#paste("Percent double positive before selection:", round(sum(c11_recomb$grn >= 3e4 & c11_recomb$red >= 3e4) / nrow(c11_recomb) * 100,2))
-#paste("Percent double positive after selection:", round(sum(c11_ap1903$grn >= 3e4 & c11_ap1903$red >= 3e4) / nrow(c11_ap1903) * 100,2))
-
-pca_vectorplot <- fviz_pca_var(clone2.pca,
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-pca_vectorplot
-
-ggsave(file = "plots/pca_vectorplot.pdf", pca_vectorplot, height = 2, width = 2)
-```
 
 ```{r Flanking data - Flow Cyometry}
 ## Making a data frame to keep track of how many unexcised cells are observed with G718A
@@ -972,7 +404,7 @@ f283b_fraction_unexcised <- sum((f283b_subset %>% filter(sample == "Flanked"))$r
 flanking_flow_df <- rbind(flanking_flow_df, data.frame("flow" = "F283b", "frac_unexcised" = f283b_fraction_unexcised))
 ```
 
-```{r Flanking data - Flow Cyometry}
+```{r Some more flanking data - Flow Cyometry}
 ## Some summary graphs
 ## An example set of samples
 f131_example <- rbind(f131_none[1:20000,], f131_g718a[1:20000,], f131_g747a[1:20000,]) %>% filter(!is.na(sample))
@@ -1001,8 +433,7 @@ F131_ratio_histogram
 
 ```
 
-
-```{r Flanking data - Flow Cyometry}
+```{r Flanking data averages}
 ## Looking at fraction excised over time
 flanking_flow_days <- read.csv(file = "data/Flanking_expt_timepoints.csv", header = T, stringsAsFactors = F)
 flanking_flow_df2 <- merge(flanking_flow_df, flanking_flow_days, by = "flow")
@@ -1298,13 +729,592 @@ ggsave(file = "plots/Flanking_sequencing.pdf", Flanking_sequencing, height = 2, 
 Flanking_sequencing
 ```
 
-### GCaMP and STIM1 analysis relevant to figure 4
 
-```{r First import the jGCaMP data}
+## Creating and initially testing the double landing pad
+## This is relevant to Figure 3
+
+```{r Initial validation data for G542Ac3 and G783Ac2 cells}
+c2_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_none.csv.gz")
+c2_none <- c2_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_none) <- c("fsc","ssc","blu","grn","red","nir")
+c2_none$clone <- "c2"; c2_none$treatment <- "none"
+c2_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_recomb.csv.gz")
+c2_recomb <- c2_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_recomb) <- c("fsc","ssc","blu","grn","red","nir")
+c2_recomb$clone <- "c2"; c2_recomb$treatment <- "recomb"
+c2_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_ap1903.csv.gz")
+c2_ap1903 <- c2_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
+c2_ap1903$clone <- "c2"; c2_ap1903$treatment <- "ap1903"
+
+
+cell_number <- 2000
+combined_data <- rbind(c2_none[1:cell_number,], c2_recomb[1:cell_number,], c2_ap1903[1:cell_number,])
+combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
+
+plot_alpha <- 0.2
+axis_limits <- c(10,1e6)
+
+custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
+
+c2_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
+
+c2_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
+
+c2_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
+
+c2_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
+
+c2_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
+
+c2_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
+  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
+c2_gr_plot
+
+c2_arranged_plot <- grid.arrange(c2_bn_plot, c2_bg_plot, c2_br_plot, c2_ng_plot, c2_nr_plot, c2_gr_plot, ncol=6, nrow=1)
+
+ggsave(file = "plots/201002/c2_arranged_plot.png", c2_arranged_plot, height = 3, width = 18)
+
+paste("Percent double positive before selection:", round(sum(c2_recomb$grn >= 3e4 & c2_recomb$red >= 3e4) / nrow(c2_recomb) * 100,2))
+paste("Percent double positive after selection:", round(sum(c2_ap1903$grn >= 3e4 & c2_ap1903$red >= 3e4) / nrow(c2_ap1903) * 100,2))
+```
+
+```{r Initial validation data for G542Ac3 and G783Ac6 cells}
+c6_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_none.csv.gz")
+c6_none <- c6_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_none) <- c("fsc","ssc","blu","grn","red","nir")
+c6_none$clone <- "c6"; c6_none$treatment <- "none"
+c6_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_recomb.csv.gz")
+c6_recomb <- c6_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_recomb) <- c("fsc","ssc","blu","grn","red","nir")
+c6_recomb$clone <- "c6"; c6_recomb$treatment <- "recomb"
+c6_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_ap1903.csv.gz")
+c6_ap1903 <- c6_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
+c6_ap1903$clone <- "c6"; c6_ap1903$treatment <- "ap1903"
+
+
+cell_number <- 2000
+combined_data <- rbind(c6_none[1:cell_number,], c6_recomb[1:cell_number,], c6_ap1903[1:cell_number,])
+combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
+
+plot_alpha <- 0.2
+axis_limits <- c(10,1e6)
+
+custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
+
+c6_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
+
+c6_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
+
+c6_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
+
+c6_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
+
+c6_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
+
+c6_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
+  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
+c6_gr_plot
+
+c6_arranged_plot <- grid.arrange(c6_bn_plot, c6_bg_plot, c6_br_plot, c6_ng_plot, c6_nr_plot, c6_gr_plot, ncol=6, nrow=1)
+
+ggsave(file = "plots/201002/c6_arranged_plot.png", c6_arranged_plot, height = 3, width = 18)
+
+paste("Percent double positive before selection:", round(sum(c6_recomb$grn >= 3e4 & c6_recomb$red >= 3e4) / nrow(c6_recomb) * 100,2))
+paste("Percent double positive after selection:", round(sum(c6_ap1903$grn >= 3e4 & c6_ap1903$red >= 3e4) / nrow(c6_ap1903) * 100,2))
+```
+
+```{r Initial validation data for G542Ac3 and G783Ac11 cells}
+c11_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_none.csv.gz")
+c11_none <- c11_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_none) <- c("fsc","ssc","blu","grn","red","nir")
+c11_none$clone <- "c11"; c11_none$treatment <- "none"
+c11_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_recomb.csv.gz")
+c11_recomb <- c11_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_recomb) <- c("fsc","ssc","blu","grn","red","nir")
+c11_recomb$clone <- "c11"; c11_recomb$treatment <- "recomb"
+c11_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_ap1903.csv.gz")
+c11_ap1903 <- c11_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
+c11_ap1903$clone <- "c11"; c11_ap1903$treatment <- "ap1903"
+
+
+cell_number <- 2000
+combined_data <- rbind(c11_none[1:cell_number,], c11_recomb[1:cell_number,], c11_ap1903[1:cell_number,])
+combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
+
+plot_alpha <- 0.2
+axis_limits <- c(10,1e6)
+
+custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
+
+c11_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
+
+c11_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
+
+c11_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
+
+c11_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
+
+c11_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
+
+c11_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
+  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
+c11_gr_plot
+
+c11_arranged_plot <- grid.arrange(c11_bn_plot, c11_bg_plot, c11_br_plot, c11_ng_plot, c11_nr_plot, c11_gr_plot, ncol=6, nrow=1)
+
+ggsave(file = "plots/201002/c11_arranged_plot.png", c11_arranged_plot, height = 3, width = 18)
+
+paste("Percent double positive before selection:", round(sum(c11_recomb$grn >= 3e4 & c11_recomb$red >= 3e4) / nrow(c11_recomb) * 100,2))
+paste("Percent double positive after selection:", round(sum(c11_ap1903$grn >= 3e4 & c11_ap1903$red >= 3e4) / nrow(c11_ap1903) * 100,2))
+```
+
+Below is now repeat data for testing these three clones to confirm which is best
+
+```{r Initial validation data for G542Ac3 and G783Ac2 cells repeated}
+c2_none_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone2_none.csv.gz")
+c2_none <- c2_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_none) <- c("fsc","ssc","blu","grn","red","nir")
+c2_none$clone <- "c2"; c2_none$treatment <- "none"
+c2_recomb_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone2_recomb.csv.gz")
+c2_recomb <- c2_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_recomb) <- c("fsc","ssc","blu","grn","red","nir")
+c2_recomb$clone <- "c2"; c2_recomb$treatment <- "recomb"
+c2_ap1903_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone2_ap1903.csv.gz")
+c2_ap1903 <- c2_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
+c2_ap1903$clone <- "c2"; c2_ap1903$treatment <- "ap1903"
+
+
+cell_number <- 2000
+combined_data <- rbind(c2_none[1:cell_number,], c2_recomb[1:cell_number,], c2_ap1903[1:cell_number,])
+combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
+
+plot_alpha <- 0.2
+axis_limits <- c(10,1e6)
+
+custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
+
+c2_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
+
+c2_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
+
+c2_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
+
+c2_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
+
+c2_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
+
+c2_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
+  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
+c2_gr_plot
+
+c2_arranged_plot <- grid.arrange(c2_bn_plot, c2_bg_plot, c2_br_plot, c2_ng_plot, c2_nr_plot, c2_gr_plot, ncol=6, nrow=1)
+
+ggsave(file = "plots/201016/c2_arranged_plot.png", c2_arranged_plot, height = 3, width = 18)
+
+paste("Percent double positive before selection:", round(sum(c2_recomb$grn >= 3e4 & c2_recomb$red >= 3e4) / nrow(c2_recomb) * 100,2))
+paste("Percent double positive after selection:", round(sum(c2_ap1903$grn >= 3e4 & c2_ap1903$red >= 3e4) / nrow(c2_ap1903) * 100,2))
+```
+
+```{r Initial validation data for G542Ac3 and G783Ac6 cells repeated}
+c6_none_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone6_none.csv.gz")
+c6_none <- c6_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_none) <- c("fsc","ssc","blu","grn","red","nir")
+c6_none$clone <- "c6"; c6_none$treatment <- "none"
+c6_recomb_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone6_recomb.csv.gz")
+c6_recomb <- c6_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_recomb) <- c("fsc","ssc","blu","grn","red","nir")
+c6_recomb$clone <- "c6"; c6_recomb$treatment <- "recomb"
+c6_ap1903_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone6_ap1903.csv.gz")
+c6_ap1903 <- c6_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
+c6_ap1903$clone <- "c6"; c6_ap1903$treatment <- "ap1903"
+
+
+cell_number <- 2000
+combined_data <- rbind(c6_none[1:cell_number,], c6_recomb[1:cell_number,], c6_ap1903[1:cell_number,])
+combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
+
+plot_alpha <- 0.2
+axis_limits <- c(10,1e6)
+
+custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
+
+c6_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
+
+c6_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
+
+c6_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
+
+c6_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
+
+c6_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
+
+c6_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
+  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
+c6_gr_plot
+
+c6_arranged_plot <- grid.arrange(c6_bn_plot, c6_bg_plot, c6_br_plot, c6_ng_plot, c6_nr_plot, c6_gr_plot, ncol=6, nrow=1)
+
+ggsave(file = "plots/201016/c6_arranged_plot.png", c6_arranged_plot, height = 3, width = 18)
+
+paste("Percent double positive before selection:", round(sum(c6_recomb$grn >= 3e4 & c6_recomb$red >= 3e4) / nrow(c6_recomb) * 100,2))
+paste("Percent double positive after selection:", round(sum(c6_ap1903$grn >= 3e4 & c6_ap1903$red >= 3e4) / nrow(c6_ap1903) * 100,2))
+```
+
+```{r Initial validation data for G542Ac3 and G783Ac11 cells repeated}
+c11_none_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone11_none.csv.gz")
+c11_none <- c11_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_none) <- c("fsc","ssc","blu","grn","red","nir")
+c11_none$clone <- "c11"; c11_none$treatment <- "none"
+c11_recomb_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone11_recomb.csv.gz")
+c11_recomb <- c11_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_recomb) <- c("fsc","ssc","blu","grn","red","nir")
+c11_recomb$clone <- "c11"; c11_recomb$treatment <- "recomb"
+c11_ap1903_raw <- read.csv(file = "data/flow/201016_F74_G783A_Clone_Comparisons/Clone11_ap1903.csv.gz")
+c11_ap1903 <- c11_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
+c11_ap1903$clone <- "c11"; c11_ap1903$treatment <- "ap1903"
+
+
+cell_number <- 2000
+combined_data <- rbind(c11_none[1:cell_number,], c11_recomb[1:cell_number,], c11_ap1903[1:cell_number,])
+combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
+
+plot_alpha <- 0.2
+axis_limits <- c(10,1e6)
+
+custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
+
+c11_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
+
+c11_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
+
+c11_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
+
+c11_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
+
+c11_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
+
+c11_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
+  geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
+c11_gr_plot
+
+c11_arranged_plot <- grid.arrange(c11_bn_plot, c11_bg_plot, c11_br_plot, c11_ng_plot, c11_nr_plot, c11_gr_plot, ncol=6, nrow=1)
+
+ggsave(file = "plots/201016/c11_arranged_plot.png", c11_arranged_plot, height = 3, width = 18)
+
+paste("Percent double positive before selection:", round(sum(c11_recomb$grn >= 3e4 & c11_recomb$red >= 3e4) / nrow(c11_recomb) * 100,2))
+paste("Percent double positive after selection:", round(sum(c11_ap1903$grn >= 3e4 & c11_ap1903$red >= 3e4) / nrow(c11_ap1903) * 100,2))
+```
+
+## We're moving forward with clone 11, so show that data here 
+```{r G542Ac3 and G783Ac11 cell plots for manuscript}
+
+plot_alpha <- 0.2
+axis_limits <- c(10,1e6)
+
+c11_none_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data %>% filter(treatment == "none"), aes(x = blu, y = nir), alpha = plot_alpha)
+c11_none_bn_plot
+
+c11_recomb_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "recomb") + 
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data %>% filter(treatment == "recomb"), aes(x = blu, y = nir), alpha = plot_alpha)
+c11_recomb_bn_plot
+
+c11_ap1903_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "ap1903") + 
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data %>% filter(treatment == "ap1903"), aes(x = blu, y = nir), alpha = plot_alpha)
+c11_ap1903_bn_plot
+
+c11_none_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data %>% filter(treatment == "none"), aes(x = grn, y = red), alpha = plot_alpha)
+c11_none_gr_plot
+
+c11_recomb_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "recomb") + 
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data %>% filter(treatment == "recomb"), aes(x = grn, y = red), alpha = plot_alpha)
+c11_recomb_gr_plot
+
+c11_ap1903_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "ap1903") + 
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = combined_data %>% filter(treatment == "ap1903"), aes(x = grn, y = red), alpha = plot_alpha)
+c11_ap1903_gr_plot
+
+
+c11_arranged_plot <- grid.arrange(c11_bn_plot, c11_bg_plot, c11_br_plot, c11_ng_plot, c11_nr_plot, c11_gr_plot, ncol=6, nrow=1)
+
+ggsave(file = "plots/201016/c11_arranged_plot.png", c11_arranged_plot, height = 3, width = 18)
+
+paste("Percent double positive before selection:", round(sum(c11_recomb$grn >= 3e4 & c11_recomb$red >= 3e4) / nrow(c11_recomb) * 100,2))
+paste("Percent double positive after selection:", round(sum(c11_ap1903$grn >= 3e4 & c11_ap1903$red >= 3e4) / nrow(c11_ap1903) * 100,2))
+
+```
+
+Plotting the double landing pad PCA data for all relevant colors
+
+```{r Principal component analysis}
+# http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/118-principal-component-analysis-in-r-prcomp-vs-princomp/
+
+combined_data <- rbind(c11_none[1:2000,], c11_recomb[1:2000,], c11_ap1903[1:2000,])
+
+ggplot() + theme_bw() + scale_x_log10() + scale_y_log10() + geom_point(data = combined_data, aes(x = red, y = nir))
+
+combined_data$zir <- combined_data$nir - combined_data$red * 0.01
+ggplot() + theme_bw() + scale_x_log10() + scale_y_log10() + geom_point(data = combined_data, aes(x = red, y = zir))
+
+combined_for_pca <- combined_data[,c("blu","grn","red","zir")]
+
+clone2.pca <- prcomp(combined_for_pca, center = TRUE,scale. = TRUE)
+fviz_eig(clone2.pca)
+
+autoplot(clone2.pca, alpha = 0.2) +
+  scale_x_continuous(limits = c(-0.3,0.3)) + scale_y_continuous(limits = c(-0.3,0.3))
+
+fviz_pca_var(clone2.pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+clone2.pca$rotation
+
+pca2 <- data.frame("pc1" = clone2.pca$x[,1], "pc2" = clone2.pca$x[,2])
+
+pca2$treatment <- combined_data[,"treatment"]
+
+pca2$treatment <- factor(pca2$treatment, levels = c("none","recomb","ap1903"))
+custom_color_scale <- c("none" = "magenta", "ap1903" = "cyan", "recomb" = "green")
+
+ggplot() + theme_bw() + theme(panel.grid.minor = element_blank()) + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_continuous(limits = c(-5,5)) +
+  scale_y_continuous(limits = c(-3,2)) +
+  geom_point(data = pca2, aes(x = pc1, y = pc2, color = treatment), alpha = 0.05)
+
+ggplot() + theme_bw() + theme(panel.grid.minor = element_blank()) + 
+  scale_color_manual(values = custom_color_scale) +
+  scale_x_continuous(limits = c(-5,5)) +
+  scale_y_continuous(limits = c(-3,2)) +
+  geom_point(data = pca2, aes(x = pc1, y = pc2), alpha = 0.05) +
+  facet_grid(rows = vars(treatment))
+
+pca_details <- cbind(combined_for_pca,pca2)
+
+pca_details_melted <- melt(pca_details[,c("treatment","blu","grn","red","zir")], id. = "treatment")
+
+ggplot() + theme_bw() +
+  scale_x_log10() + 
+  geom_histogram(data = pca_details_melted, aes(x = value)) +
+  facet_grid(cols = vars(variable))
+
+blu_cutoff <- 1e3
+grn_cutoff <- 1e4
+red_cutoff <- 1e4
+zir_cutoff <- 1e3
+
+ggplot() + theme_bw() + scale_x_log10() + geom_histogram(data = pca_details, aes(x = blu)) + geom_vline(xintercept = blu_cutoff)
+ggplot() + theme_bw() + scale_x_log10() + geom_histogram(data = pca_details, aes(x = grn)) + geom_vline(xintercept = grn_cutoff)
+ggplot() + theme_bw() + scale_x_log10() + geom_histogram(data = pca_details, aes(x = red)) + geom_vline(xintercept = red_cutoff)
+ggplot() + theme_bw() + scale_x_log10() + geom_histogram(data = pca_details, aes(x = zir)) + geom_vline(xintercept = zir_cutoff)
+
+pca_details$blu2 <- 0
+pca_details$grn2 <- 0
+pca_details$red2 <- 0
+pca_details$zir2 <- 0
+
+for(x in 1:nrow(pca_details)){
+  if(pca_details$blu[x] > blu_cutoff){pca_details$blu2[x] <- 1}
+  if(pca_details$grn[x] > grn_cutoff){pca_details$grn2[x] <- 1}
+  if(pca_details$red[x] > red_cutoff){pca_details$red2[x] <- 1}
+  if(pca_details$zir[x] > zir_cutoff){pca_details$zir2[x] <- 1}
+}
+
+pca_details$bgrn <- paste(pca_details$blu2,pca_details$grn2,pca_details$red2,pca_details$zir2,sep="")
+
+bgrn_table <- data.frame(table(pca_details$bgrn)) %>% arrange(desc(Freq))
+
+pca_details$label <- "Unannotated"
+
+for(x in 1:nrow(pca_details)){
+  if(pca_details$bgrn[x] == "1001"){pca_details$label[x] <- "Unrecombined"}
+  if(pca_details$bgrn[x] == "0110"){pca_details$label[x] <- "Doubly_recombined"}
+  if(pca_details$bgrn[x] == "1010"){pca_details$label[x] <- "GA_only"}
+  if(pca_details$bgrn[x] == "0101"){pca_details$label[x] <- "GT_only"}
+}
+
+custom_color_scale2 <- c("Unannotated" = "black", "Unrecombined" = "blue", "Doubly_recombined" = "purple", "GA_only" = "red", "GT_only" = "green")
+
+Clone11_PCA_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank()) + 
+  scale_color_manual(values = custom_color_scale2) +
+  scale_x_continuous(limits = c(-5,5)) +
+  scale_y_continuous(limits = c(-3,2)) +
+  geom_point(data = pca_details, aes(x = pc1, y = pc2, color = label), alpha = 0.1, size = 0.5) +
+  facet_grid(rows = vars(treatment))
+Clone11_PCA_plot
+ggsave(file = "plots/Clone11_PCA_plot.pdf", Clone11_PCA_plot, height = 3.4, width = 4.5)
+
+```
+
+```{r Individual flow plots}
+plot_alpha = 0.02
+point_size = 0.25
+
+c11_none_bz_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = pca_details %>% filter(treatment == "none"), aes(x = blu, y = zir), alpha = plot_alpha, size = point_size)
+c11_none_bz_plot
+
+c11_recomb_bz_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = pca_details %>% filter(treatment == "recomb"), aes(x = blu, y = zir), alpha = plot_alpha, size = point_size)
+c11_recomb_bz_plot
+
+c11_ap1903_bz_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = pca_details %>% filter(treatment == "ap1903"), aes(x = blu, y = zir), alpha = plot_alpha, size = point_size)
+c11_ap1903_bz_plot
+
+c11_none_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = pca_details %>% filter(treatment == "none"), aes(x = grn, y = red), alpha = plot_alpha, size = point_size)
+c11_none_gr_plot
+
+c11_recomb_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "recomb") + 
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = pca_details %>% filter(treatment == "recomb"), aes(x = grn, y = red), alpha = plot_alpha, size = point_size)
+c11_recomb_gr_plot
+
+c11_ap1903_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "ap1903") + 
+  scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
+  geom_point(data = pca_details %>% filter(treatment == "ap1903"), aes(x = grn, y = red), alpha = plot_alpha, size = point_size)
+c11_ap1903_gr_plot
+
+c11_arranged_plot <- grid.arrange(c11_none_bz_plot, c11_recomb_bz_plot, c11_ap1903_bz_plot, c11_none_gr_plot, c11_recomb_gr_plot, c11_ap1903_gr_plot, ncol=3, nrow=2)
+
+ggsave(file = "plots/c11_arranged_plot.pdf", c11_arranged_plot, height = 2.2, width = 4.1)
+
+#paste("Percent double positive before selection:", round(sum(c11_recomb$grn >= 3e4 & c11_recomb$red >= 3e4) / nrow(c11_recomb) * 100,2))
+#paste("Percent double positive after selection:", round(sum(c11_ap1903$grn >= 3e4 & c11_ap1903$red >= 3e4) / nrow(c11_ap1903) * 100,2))
+
+pca_vectorplot <- fviz_pca_var(clone2.pca,
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+pca_vectorplot
+
+ggsave(file = "plots/pca_vectorplot.pdf", pca_vectorplot, height = 2, width = 2)
+```
+
+
+## Double landing pad cells for biosensors
+## GCaMP and STIM1 analysis relevant to figure 4
+
+```{r First import the GCaMP data}
 rep1 = read.csv("Data/jgcamp_data/rep1_signal.csv")
 rep1 = rep1[-1]
 rep2 = read.csv("Data/jgcamp_data/rep2_signal.csv")
 rep2 = rep2[-1]
+
+## Shifting times so addition of drug is time zero
+rep1$ND.T <- rep1$ND.T - 30
+rep2$ND.T <- rep2$ND.T - 30
 
 #separate based on stimulus and variant
 rep1_mch_cch = rep1 %>% filter(Name == "mCherry_cch")
@@ -1326,20 +1336,20 @@ rep2_013_iono = rep2 %>% filter(Name == "pNK013_ionomycin")
 ```
 
 Figure 4B - Representative plot of MFI vs time for fluorescence microscopy measurements - add carbachol and use neg control
-```{r}
+```{r Representative GcaMP plot with negative control}
 rep_4b = ggplot() +
-  scale_x_continuous(limits = c(0,180), breaks = c(0,30,60,90,120,150,180)) + 
+  scale_x_continuous(limits = c(-30,150), breaks = c(-30,0,30,60,90,120,150,180)) + 
   scale_y_continuous(limits = c(0,2500))+
   geom_point(data = rep1_mch_cch, aes(x = ND.T, y = signal, color = "100uM Carbachol"), size =3, alpha = 0.2, color = "black")+
   geom_point(data = rep1_mch_iono, aes(x = ND.T, y = signal, color = "2uM Ionomycin"), size =3, alpha = 0.2, color = "orange")+
   labs(x = "Time (seconds)", y = "Green MFI", color = "Condition") +
-  theme(legend.position = "top")
+  theme(legend.position = "top", panel.grid.major = element_blank())
 rep_4b
 ggsave("Plots/rep_4b.pdf", rep_4b, width = 3.5, height = 1.75, useDingbats = F)
 ```
 
-Figure 4C - fluorescence measurement curves for variants in carbachol and ionomycin
-```{r}
+Supplementary Figure 3 - un-normalized fluorescence measurement curves for variants in carbachol and ionomycin
+```{r Raw GCaMP curves for supplement}
 #fluorescence measurements for cch of each replicate
 cch_rep1 = bind_rows(rep1_mch_cch, rep1_005_cch, rep1_013_cch) 
 cch_rep1 = cch_rep1 %>% mutate(rep = '1')
@@ -1350,11 +1360,13 @@ cch_reps[cch_reps == "mCherry_cch"] = "Negative control"
 cch_reps[cch_reps == "pNK005_cch"] = "WT STIM1"
 cch_reps[cch_reps == "pNK013_cch"] = "R429C STIM1"
 
-b = ggplot(data = cch_reps, aes(x = ND.T, y = signal, color = Name))+
-  theme_bw()+ scale_y_continuous(limits = c(0,2500))+ 
-  scale_x_continuous(limits= c(0,180), breaks = c(0,60,120,180))+
-  labs(x = "Time (s)", y = "Green MFI", color = "Variant")+ theme(text = element_text(size = 20)) + 
-  geom_line(size = 1) +
+cch_reps$Name <- factor(cch_reps$Name, levels = c("Negative control", "WT STIM1", "R429C STIM1"))
+
+b = ggplot(data = cch_reps, aes(x = ND.T, y = signal, color = Name))+ theme(panel.grid.major = element_blank(), legend.position = "top") +
+  scale_y_continuous(limits = c(0,2500))+ 
+  scale_x_continuous(limits= c(-30,150), breaks = c(0,60,120))+
+  labs(title = "100uM Carbachol", x = "Time (s)", y = "Green MFI", color = "Variant")+ 
+  geom_point(size = 1, alpha = 0.2) +
   facet_wrap(~rep)
 b
 ggsave("Plots/cch_reps.pdf", b, width = 7, height = 4)
@@ -1370,16 +1382,25 @@ iono_reps[iono_reps == "mCherry_ionomycin"] = "Negative control"
 iono_reps[iono_reps == "pNK005_ionomycin"] = "WT STIM1"
 iono_reps[iono_reps == "pNK013_ionomycin"] = "R429C STIM1"
 
-c = ggplot(data = iono_reps, aes(x = ND.T, y = signal, color = Name))+ scale_y_continuous(limits = c(0,6000))+ scale_x_continuous(limits= c(0,180), breaks = c(0,60,120,180))+theme_bw()+ labs(x = "Time (s)", y = "Green MFI")+ theme(text = element_text(size = 20))+
-  geom_line(size = 1) +
+iono_reps$Name <- factor(iono_reps$Name, levels = c("Negative control", "WT STIM1", "R429C STIM1"))
+
+c = ggplot(data = iono_reps, aes(x = ND.T, y = signal, color = Name))+ theme(panel.grid.major = element_blank(), legend.position = "top") +
+  scale_y_continuous(limits = c(0,6000))+ scale_x_continuous(limits= c(-30,150), breaks = c(0,60,120))+ 
+  labs(title = "2uM Ionomycin", x = "Time (s)", y = "Green MFI")+ 
+  geom_point(size = 1, alpha = 0.2) +
   facet_wrap(~rep)
 c
 ggsave("Plots/iono_reps.pdf", c, width = 7, height = 4)
 
+raw_gcamp_plots <- b | c
+
+raw_gcamp_plots
+
+ggsave(file = "Plots/Raw_gcamp_plots.pdf", raw_gcamp_plots, height = 3, width = 5)
 ```
 
-Figure 4D - Differences in initial vs peak fluorescence for each variant for carbachol and ionomycin
-```{r}
+Figure 4C - Differences in initial vs peak fluorescence for each variant for carbachol and ionomycin
+```{r GCaMP initial and peak comparisons}
 #100uM carbachol 
 #replicate 1
 comp_rep1_cch = data.frame(matrix(ncol = 3, nrow = 3))
@@ -1488,8 +1509,8 @@ peak_figure
 ggsave(file = "Plots/Peak_value.pdf", peak_figure, height = 2.5, width = 3)
 ```
 
-Figure 4E - normalized curves to peak values 
-```{r}
+Figure 4D - normalized curves to peak values 
+```{r Normalized GCaMP data for plot}
 #carbachol
 #rep 1
 rep1_cch_mch_decay = rep1_mch_cch %>% mutate(norm_peak = signal/quantile(signal, 0.95))
@@ -1508,7 +1529,10 @@ rep_normpeak_decay[rep_normpeak_decay == "mCherry_cch"] = "Negative control"
 rep_normpeak_decay[rep_normpeak_decay == "pNK005_cch"] = "WT STIM1"
 rep_normpeak_decay[rep_normpeak_decay == "pNK013_cch"] = "R429C STIM1"
 
-cch_normpeak_4d = ggplot(data = rep_normpeak_decay, aes(x = ND.T, y = norm_peak, color = Name))+theme_bw()+ scale_y_continuous(breaks = c(0,0.5,1))+ scale_x_continuous(breaks = c(0, 60, 120, 180))+ 
+cch_normpeak_4d = ggplot(data = rep_normpeak_decay, aes(x = ND.T, y = norm_peak, color = Name)) +
+  theme_bw() + 
+  scale_y_continuous(breaks = c(0,0.5,1)) + 
+  scale_x_continuous(breaks = c(-30,0,30,60,90,120,150))+ 
   labs(x = "Time (s)", y = "Green MFI", color = "Variant")+ theme(text = element_text(size = 20)) + 
   geom_line(size = 1) +
   facet_wrap(~rep)
@@ -1522,6 +1546,7 @@ rep_normpeak_decay2$Name <- factor(rep_normpeak_decay2$Name, levels = c("Negativ
 
 cch_normpeak_average_decay <- ggplot() + theme(legend.position = "top") +
   labs(x = "Time (seconds)", y = "Normalized fluorescence", title = "Carbachol") +
+  scale_x_continuous(breaks = c(-30,0,30,60,90,120,150))+ 
   geom_hline(yintercept = 0, alpha = 0.5) + 
   geom_point(data = rep_normpeak_decay2, aes(x = ND.T, y = mean_normpeak_decay, color = Name), alpha = 0.2)
 cch_normpeak_average_decay
@@ -1545,21 +1570,20 @@ rep_normpeak_decay_iono[rep_normpeak_decay_iono$Name == "mCherry_ionomycin","Nam
 rep_normpeak_decay_iono[rep_normpeak_decay_iono$Name == "pNK005_ionomycin","Name"] = "WT STIM1"
 rep_normpeak_decay_iono[rep_normpeak_decay_iono$Name == "pNK013_ionomycin","Name"] = "R429C STIM1"
 
-iono_normpeak_4d = ggplot(data = rep_normpeak_decay_iono, aes(x = ND.T, y = norm_peak, color = Name))+theme_bw()+ scale_y_continuous(breaks = c(0,0.5,1))+ scale_x_continuous(breaks = c(0, 60, 120, 180))+ 
+iono_normpeak_4d = ggplot(data = rep_normpeak_decay_iono, aes(x = ND.T, y = norm_peak, color = Name))+theme_bw()+ scale_y_continuous(breaks = c(0,0.5,1))+ 
+  scale_x_continuous(breaks = c(-30,0,30,60,90,120,150))+ 
   labs(x = "Time (s)", y = "Green MFI", color = "Variant")+ theme(text = element_text(size = 20)) + 
   geom_line(size = 1) +
   facet_wrap(~rep)
 iono_normpeak_4d
 
 ## Kenny mods
-
 rep_normpeak_decay_iono2 <- rep_normpeak_decay_iono %>% group_by(Name, ND.T) %>% summarize(mean_normpeak_decay = mean(norm_peak))
-
 rep_normpeak_decay_iono2$Name <- factor(rep_normpeak_decay_iono2$Name, levels = c("Negative control", "WT STIM1", "R429C STIM1"))
-
 
 iono_normpeak_average_decay <- ggplot() + theme(legend.position = "top") +
   labs(x = "Time (seconds)", y = "Normalized fluorescence", title = "Ionomycin") +
+  scale_x_continuous(breaks = c(-30,0,30,60,90,120,150))+ 
   geom_hline(yintercept = 0, alpha = 0.5) + 
   geom_point(data = rep_normpeak_decay_iono2, aes(x = ND.T, y = mean_normpeak_decay, color = Name), alpha = 0.2)
 iono_normpeak_average_decay
@@ -1574,8 +1598,9 @@ Decay_curves
 ggsave(file = "Plots/Decay_curves.pdf", Decay_curves, height = 2.5, width = 5)
 ```
 
+## Double landing pad with protein interaction pairs
+## Relevant to Figure 5 Vif <-> Apobec experiments
 
-## Figure 5 - Vif experiments
 ```{r Import the vif orientations data}
 
 vif_apobec <- read.csv(file = "data/flow/Vif_Apobec/Orientations.csv")
@@ -1594,38 +1619,119 @@ ggsave(file = "plots/Apobec_fusions_plot.pdf", Apobec_fusions_plot, height = 2.2
 
 ```
 
-```{r Vif Apobec }
+```{r Vif Apobec heatmap}
 va_rep1 <- read.csv(file = "Data/Vif_apobec/Vif_apobec_rep1.csv", header = T)
 for(x in 1:nrow(va_rep1)){
   for(y in 2:ncol(va_rep1)){
     va_rep1[x,y] <- va_rep1[x,y] / va_rep1[6,y]
   }
 }
-va_rep1_melt <- melt(va_rep1)
+va_rep1_melt <- melt(va_rep1) %>% filter(variable != "EGFP.A3F")
 colnames(va_rep1_melt) <- c("vif","apobec","normalized")
+va_rep1_melt$rep <- 1
 
-va_rep1_melt$apobec <- factor(va_rep1_melt$apobec, levels = c("EGFP","A3G.EGFP","EGFP.A3D","EGFP.A3F","EGFP.A3H2"))
-va_rep1_melt$vif <- factor(va_rep1_melt$vif, levels = rev(c("WT","STOP","A149Y","W11A","F39A","H43E")))
+va_rep2 <- read.csv(file = "Data/Vif_apobec/Vif_apobec_rep2.csv", header = T)
+for(x in 1:nrow(va_rep2)){
+  for(y in 2:ncol(va_rep2)){
+    va_rep2[x,y] <- va_rep2[x,y] / va_rep2[8,y]
+  }
+}
+va_rep2_melt <- melt(va_rep2)
+colnames(va_rep2_melt) <- c("vif","apobec","normalized")
+va_rep2_melt$rep <- 2
 
-vif_apobec_heatmap <- ggplot() + theme(axis.text.x.bottom = element_text(angle = 45, hjust = 1, vjust = 1)) +
+va_rep3 <- read.csv(file = "Data/Vif_apobec/Vif_apobec_rep3.csv", header = T)
+for(x in 1:nrow(va_rep3)){
+  for(y in 2:ncol(va_rep3)){
+    va_rep3[x,y] <- va_rep3[x,y] / va_rep3[8,y]
+  }
+}
+va_rep3_melt <- melt(va_rep3)
+colnames(va_rep3_melt) <- c("vif","apobec","normalized")
+va_rep3_melt$rep <- 2
+
+va_rep_combined <- rbind(va_rep1_melt, va_rep2_melt, va_rep3_melt)
+
+va_rep_combined_summary <- va_rep_combined %>% group_by(vif, apobec) %>% summarize(mean = mean(normalized), sd = sd(normalized)) %>% mutate(mean_log2 = log2(mean), sd_log2 = log2(sd))
+
+va_rep_combined_summary$apobec <- factor(va_rep_combined_summary$apobec, levels = c("EGFP","A3G.EGFP","EGFP.A3D","EGFP.A3H2"))
+va_rep_combined_summary$vif <- factor(va_rep_combined_summary$vif, levels = rev(c("WT","STOP","W89R","A149Y","W11A","H43E","F39A","G84K")))
+
+vif_apobec_heatmap1 <- ggplot() + theme(axis.text.x.bottom = element_text(angle = 45, hjust = 1, vjust = 1)) +
   labs(x = "EGFP or Apobec fusion", y = "HIV-1 Vif variant") +
   #scale_fill_gradient2(low = "white", mid = "darkgreen", high = "red", na.value = "brown4", limits = c(0.25,1.3), midpoint = 1) + 
   scale_fill_gradient2(low = "white", mid = "darkgreen", high = "red", na.value = "green4", limits = c(log2(0.25),log2(1.3)), midpoint = 1) + 
   geom_tile(data = va_rep1_melt, aes(x = apobec, y = vif, fill = log2(normalized)))
-vif_apobec_heatmap
-ggsave(file = "Plots/Vif_apobec_heatmap.pdf", vif_apobec_heatmap, height = 2, width = 3.5)
+vif_apobec_heatmap1
+ggsave(file = "Plots/Vif_apobec_heatmap1.pdf", vif_apobec_heatmap1, height = 2, width = 3.5)
+
+vif_apobec_heatmap2 <- ggplot() + theme(axis.text.x.bottom = element_text(angle = 45, hjust = 1, vjust = 1)) +
+  labs(x = "EGFP or Apobec fusion", y = "HIV-1 Vif variant") +
+  #scale_fill_gradient2(low = "white", mid = "darkgreen", high = "red", na.value = "brown4", limits = c(0.25,1.3), midpoint = 1) + 
+  scale_fill_gradient2(low = "white", mid = "darkgreen", high = "red", na.value = "green4", limits = c(log2(0.18),log2(1.32)), midpoint = 1) + 
+  geom_tile(data = va_rep2_melt, aes(x = apobec, y = vif, fill = log2(normalized)))
+vif_apobec_heatmap2
+ggsave(file = "Plots/Vif_apobec_heatmap2.pdf", vif_apobec_heatmap2, height = 2, width = 3.5)
+
+vif_apobec_heatmap3 <- ggplot() + theme(axis.text.x.bottom = element_text(angle = 45, hjust = 1, vjust = 1)) +
+  labs(x = "EGFP or Apobec fusion", y = "HIV-1 Vif variant") +
+  #scale_fill_gradient2(low = "white", mid = "darkgreen", high = "red", na.value = "brown4", limits = c(0.25,1.3), midpoint = 1) + 
+  scale_fill_gradient2(low = "white", mid = "darkgreen", high = "red", na.value = "green4", limits = c(log2(0.2),log2(1.62)), midpoint = 1) + 
+  geom_tile(data = va_rep3_melt, aes(x = apobec, y = vif, fill = log2(normalized)))
+vif_apobec_heatmap3
+ggsave(file = "Plots/Vif_apobec_heatmap3.pdf", vif_apobec_heatmap3, height = 2, width = 3.5)
+
+vif_apobec_heatmap_combined <- ggplot() + theme(axis.text.x.bottom = element_text(angle = 45, hjust = 1, vjust = 1)) +
+  labs(x = "EGFP or Apobec fusion", y = "HIV-1 Vif variant") +
+  #scale_fill_gradient2(low = "white", mid = "darkgreen", high = "red", na.value = "brown4", limits = c(0.25,1.3), midpoint = 1) + 
+  scale_fill_gradient2(low = "white", mid = "darkgreen", high = "red", na.value = "green4", limits = c(-2.15,0.4), midpoint = 1) + 
+  geom_tile(data = va_rep_combined_summary, aes(x = apobec, y = vif, fill = mean_log2))
+vif_apobec_heatmap_combined
+ggsave(file = "Plots/vif_apobec_heatmap_combined.pdf", vif_apobec_heatmap_combined, height = 2, width = 3)
 ```
 
+```{r Individual Vif-Apobec data for supplementary figure}
 
+va_rep_combined$vif <- factor(va_rep_combined$vif, levels = c("WT","STOP","W89R","A149Y","W11A","H43E","F39A","G84K"))
+va_rep_combined_summary$vif <- factor(va_rep_combined_summary$vif, levels = c("WT","STOP","W89R","A149Y","W11A","H43E","F39A","G84K"))
 
+EGFP_plot <- ggplot() + theme(panel.grid.major.x = element_blank(), plot.title = element_text(hjust = 0.5), axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) + 
+  scale_y_log10(limits = c(0.18,1.62), breaks = c(0.25,0.5,1)) + labs(title = "EGFP", x = NULL) +
+  geom_hline(yintercept = 1, alpha = 0.4) +
+  geom_point(data = va_rep_combined %>% filter(apobec == "EGFP"), aes(x = vif, y = normalized), alpha = 0.4, color = "red") +
+  geom_point(data = va_rep_combined_summary %>% filter(apobec == "EGFP"), aes(x = vif, y = mean), shape = 95, size = 6)
+EGFP_plot
 
+A3G.EGFP_plot <- ggplot() + theme(panel.grid.major.x = element_blank(), plot.title = element_text(hjust = 0.5), axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) + 
+  scale_y_log10(limits = c(0.18,1.62), breaks = c(0.25,0.5,1)) + labs(title = "A3G-EGFP", x = NULL) +
+  geom_hline(yintercept = 1, alpha = 0.4) +
+  geom_point(data = va_rep_combined %>% filter(apobec == "A3G.EGFP"), aes(x = vif, y = normalized), alpha = 0.4, color = "red") +
+  geom_point(data = va_rep_combined_summary %>% filter(apobec == "A3G.EGFP"), aes(x = vif, y = mean), shape = 95, size = 6)
+A3G.EGFP_plot
 
+EGFP.A3D_plot <- ggplot() + theme(panel.grid.major.x = element_blank(), plot.title = element_text(hjust = 0.5), axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) + 
+  scale_y_log10(limits = c(0.18,1.62), breaks = c(0.25,0.5,1)) + labs(title = "EGFP-A3D", x = NULL) +
+  geom_hline(yintercept = 1, alpha = 0.4) +
+  geom_point(data = va_rep_combined %>% filter(apobec == "EGFP.A3D"), aes(x = vif, y = normalized), alpha = 0.4, color = "red") +
+  geom_point(data = va_rep_combined_summary %>% filter(apobec == "EGFP.A3D"), aes(x = vif, y = mean), shape = 95, size = 6)
+EGFP.A3D_plot
 
+EGFP.A3H2_plot <- ggplot() + theme(panel.grid.major.x = element_blank(), plot.title = element_text(hjust = 0.5), axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) + 
+  scale_y_log10(limits = c(0.18,1.62), breaks = c(0.25,0.5,1)) + labs(title = "EGFP-A3H2", x = NULL) +
+  geom_hline(yintercept = 1, alpha = 0.4) +
+  geom_point(data = va_rep_combined %>% filter(apobec == "EGFP.A3H2"), aes(x = vif, y = normalized), alpha = 0.4, color = "red") +
+  geom_point(data = va_rep_combined_summary %>% filter(apobec == "EGFP.A3H2"), aes(x = vif, y = mean), shape = 95, size = 6)
+EGFP.A3H2_plot
 
+Apobec_vif_supp_fig <- EGFP_plot | A3G.EGFP_plot | EGFP.A3D_plot | EGFP.A3H2_plot
+Apobec_vif_supp_fig
+ggsave(file = "Plots/Apobec_vif_supp_fig.pdf", Apobec_vif_supp_fig, height = 2, width = 8)
+```
 
+## Testing additional GN dinucleotide pairs in combination
+## Relevant to Figure 6
 
-
-```{r}
+```{r Importing GN sequencing data}
 
 attB_plasmid_mixture <- read.delim(file = "data/GN_recombinations/attBmix_outfile.tsv", header = T, stringsAsFactors = F)
 attB_plasmid_mixture_table <- data.frame(table(attB_plasmid_mixture$attB))
@@ -1686,6 +1792,8 @@ gn_combined <- rbind(gn_rep1_results_frame, gn_rep2_results_frame, gn_rep3_resul
 
 gn_combined$enrichment <- gn_combined$final_freq/gn_combined$start_freq
 
+write.csv(file = "data/GN_recombination_results.csv", gn_combined, row.names = FALSE)
+
 gn_combined_summary <- gn_combined %>% group_by(attP, attB) %>% summarize(mean = mean(final_freq), sd = sd(final_freq))
 
 gn_combined_summary2 <- rbind(gn_combined_summary, data.frame("attP" = "Input", "attB" = attB_plasmid_mixture_table$attB, "mean" = attB_plasmid_mixture_table$start_freq, "sd" = NA))
@@ -1694,8 +1802,7 @@ gn_combined_summary2 <- rbind(gn_combined_summary, data.frame("attP" = "Input", 
 ```
 
 
-
-```{r Recombination mixture experiments}
+```{r Recombination mixture experiment plot}
 gn_combined$attP <- factor(gn_combined$attP, levels = c("GT","GA","GC","GG"))
 gn_combined_summary2$attP <- factor(gn_combined_summary2$attP, levels = c("Input", "GT","GA","GC","GG"))
 
@@ -1710,7 +1817,7 @@ ggsave(file = "plots/Orthogonal_plasmid_recombinations.pdf", Orthogonal_plasmid_
 Orthogonal_plasmid_recombinations
 ```
 
-```{r Recombination mixture experiments 2}
+```{r Modeling predicted pairwise specificities based on the GN data}
 recomb_mixture_test <- gn_combined_summary[1:16,c("attP","attB")]
 colnames(recomb_mixture_test) <- c("lp1","lp2")
 
@@ -1746,3 +1853,5 @@ Double_LP_heatmap <- ggplot() + labs(x = "First landing pad", y = "Second landin
 ggsave(file = "plots/Double_LP_heatmap.pdf", Double_LP_heatmap, height = 2, width = 3.3)
 Double_LP_heatmap
 ```
+
+
