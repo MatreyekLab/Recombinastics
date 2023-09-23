@@ -1,21 +1,23 @@
 Recombinastics_analysis
 ================
 Kenneth Matreyek and Nisha D. Kamath
-initialized 6/17/2020 - last updated 6/7/2023
+initialized 6/17/2020 - last updated 9/22/2023
 
 ``` r
 rm(list = ls())
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
-    ## ✔ ggplot2 3.4.0      ✔ purrr   0.3.5 
-    ## ✔ tibble  3.1.8      ✔ dplyr   1.0.10
-    ## ✔ tidyr   1.2.1      ✔ stringr 1.5.0 
-    ## ✔ readr   2.1.3      ✔ forcats 0.5.2 
+    ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+    ## ✔ dplyr     1.1.2     ✔ readr     2.1.4
+    ## ✔ forcats   1.0.0     ✔ stringr   1.5.0
+    ## ✔ ggplot2   3.4.3     ✔ tibble    3.2.1
+    ## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+    ## ✔ purrr     1.0.2     
     ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
+    ## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 
 ``` r
 library(ggrepel)
@@ -24,6 +26,10 @@ library(reshape)
 
     ## 
     ## Attaching package: 'reshape'
+    ## 
+    ## The following object is masked from 'package:lubridate':
+    ## 
+    ##     stamp
     ## 
     ## The following object is masked from 'package:dplyr':
     ## 
@@ -148,6 +154,9 @@ Recombination_method_plot <- ggplot() +
 
     ## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
     ## ℹ Please use `linewidth` instead.
+    ## This warning is displayed once every 8 hours.
+    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+    ## generated.
 
 ``` r
 print(Recombination_method_plot)
@@ -186,7 +195,8 @@ lower_conf2 <- cbind(label_frame,lower_conf)
 upper_conf2_melted <- melt(upper_conf2[,c("comboname","attp","gfp","mcherry")], id = c("comboname","attp"))
 lower_conf2_melted <- melt(lower_conf2[,c("comboname","attp","gfp","mcherry")], id = c("comboname","attp"))
 means2_melted <- melt(means2[,c("comboname","attp","gfp","mcherry")], id = c("comboname","attp"))
-
+means2_melted$geomean <- 10^means2_melted$value
+means2_melted$geomean_rounded <- round(means2_melted$geomean,1)
 
 green_red_colorscale <- c(gfp = "green", mcherry = "red")
 
@@ -198,7 +208,7 @@ GT_vs_GA_plot <- ggplot() +
   scale_color_manual(values = green_red_colorscale) + 
   geom_errorbar(data = upper_conf2_melted, aes(x = comboname, color = variable, ymin = 10^lower_conf2_melted$value, ymax = 10^value),
                 alpha = 0.5, width = 0.2, position = position_dodge(width = 0.5)) +
-  geom_point(data = means2_melted, aes(x = comboname, y = 10^value, color = variable), alpha = 0.5, position = position_dodge(width = 0.5)) +
+  geom_point(data = means2_melted, aes(x = comboname, y = geomean, color = variable), alpha = 0.5, position = position_dodge(width = 0.5)) +
   facet_wrap(~attp)
 print(GT_vs_GA_plot)
 ```
@@ -539,21 +549,49 @@ F131_example_scatterplot
 ![](Recombinastics_analysis_files/figure-gfm/Some%20more%20flanking%20data%20-%20Flow%20Cyometry-1.png)<!-- -->
 
 ``` r
+## To respond to reviewer comments, compare the fraction of red cells in the control and flanked transfections. 
+ggplot() + scale_x_log10() +
+  geom_histogram(data = f131_example, aes(x = YL2.A)) + facet_grid(rows = vars(sample))
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning: Transformation introduced infinite values in continuous x-axis
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 25167 rows containing non-finite values (`stat_bin()`).
+
+![](Recombinastics_analysis_files/figure-gfm/Some%20more%20flanking%20data%20-%20Flow%20Cyometry-2.png)<!-- -->
+
+``` r
+paste("F131 flanked recomb percentage:",round(nrow(subset(f131_g718a, YL2.A > 1000)) / nrow(f131_g718a) * 100,1))
+```
+
+    ## [1] "F131 flanked recomb percentage: 0.9"
+
+``` r
+paste("F131 control recomb percentage:",round(nrow(subset(f131_g747a, YL2.A > 1000)) / nrow(f131_g747a) * 100,1))
+```
+
+    ## [1] "F131 control recomb percentage: 1.3"
+
+``` r
 f131_example <- rbind(f131_none[1:194000,], f131_g718a[1:194000,], f131_g747a[1:194000,]) %>% filter(!is.na(sample))
 f131_example$sample <- factor(f131_example$sample, levels = c("None", "Flanked", "Control"))
-f131_example$ratio <- f131_example$BL1.A / f131_example$YL2.A
+f131_example$ratio <- (f131_example$BL1.A + 250) / (f131_example$YL2.A + 250)
 f131_example_subset <- f131_example %>% filter(YL2.A >= flank_red_pos_cutoff & sample != "None")
 
 f131_example_control_95pct_interval <- c(quantile((f131_example_subset %>% filter(sample == "Control"))$ratio,0.05))
 
 F131_ratio_histogram <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), panel.grid.major.y = element_blank()) + 
   labs(x = "Green / Red ratio", y = "Number\nof cells") +
-  scale_x_continuous(limits = c(-0.05, 0.5), breaks = c(0,0.2,0.4)) + scale_y_continuous(breaks = c(0,100)) +
+  scale_x_continuous(limits = c(0, 0.6), breaks = c(0, 0.2, 0.4, 0.6), expand = c(0,0)) + scale_y_continuous(breaks = c(0,100)) +
   geom_histogram(data = f131_example_subset, aes(x = ratio), binwidth = 0.01) + facet_grid(rows = vars(sample)) + geom_vline(xintercept  = f131_example_control_95pct_interval, linetype = 2)
 ggsave(file = "Plots/F131_ratio_histogram.pdf", F131_ratio_histogram, height = 1.4, width = 1.8)
 ```
 
-    ## Warning: Removed 39 rows containing non-finite values (`stat_bin()`).
+    ## Warning: Removed 11 rows containing non-finite values (`stat_bin()`).
 
     ## Warning: Removed 4 rows containing missing values (`geom_bar()`).
 
@@ -561,10 +599,23 @@ ggsave(file = "Plots/F131_ratio_histogram.pdf", F131_ratio_histogram, height = 1
 F131_ratio_histogram
 ```
 
-    ## Warning: Removed 39 rows containing non-finite values (`stat_bin()`).
+    ## Warning: Removed 11 rows containing non-finite values (`stat_bin()`).
     ## Removed 4 rows containing missing values (`geom_bar()`).
 
-![](Recombinastics_analysis_files/figure-gfm/Some%20more%20flanking%20data%20-%20Flow%20Cyometry-2.png)<!-- -->
+![](Recombinastics_analysis_files/figure-gfm/Some%20more%20flanking%20data%20-%20Flow%20Cyometry-3.png)<!-- -->
+
+``` r
+## To respond to reviewer comments, compare the fraction of pared ratio cells to unexcised
+paste("F131 flanked and unexcised:",round(nrow(subset(f131_example_subset, sample == "Flanked" & YL2.A > 1000 & ratio > 0.15)) / nrow(subset(f131_example_subset, sample == "Flanked" & YL2.A > 1000)) * 100,1))
+```
+
+    ## [1] "F131 flanked and unexcised: 1.4"
+
+``` r
+paste("F131 control and unexcised:",round(nrow(subset(f131_example_subset, sample == "Control" & YL2.A > 1000 & ratio > 0.15)) / nrow(subset(f131_example_subset, sample == "Control" & YL2.A > 1000)) * 100,1))
+```
+
+    ## [1] "F131 control and unexcised: 97.2"
 
 ``` r
 ## Looking at fraction excised over time
@@ -627,11 +678,13 @@ f280_subset$label <- paste0(f280_subset$sample,"_",f280_subset$treatment)
 f280_subset_summary1 <- f280_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f280_control_95pct_interval))
 ```
 
-    ## Warning in ratio > f280_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f280_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
+    ## Warning: There were 2 warnings in `summarize()`.
+    ## The first warning was:
+    ## ℹ In argument: `unexcised = sum(ratio > f280_control_95pct_interval)`.
+    ## ℹ In group 2: `label = "Control_none"`.
+    ## Caused by warning in `ratio > f280_control_95pct_interval`:
+    ## ! longer object length is not a multiple of shorter object length
+    ## ℹ Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.
 
 ``` r
 f280_subset_summary2 <- f280_subset %>% group_by(label) %>% count()
@@ -655,8 +708,11 @@ f281_subset$label <- paste0(f281_subset$sample,"_",f281_subset$treatment)
 f281_subset_summary1 <- f281_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f281_control_95pct_interval))
 ```
 
-    ## Warning in ratio > f281_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
+    ## Warning: There was 1 warning in `summarize()`.
+    ## ℹ In argument: `unexcised = sum(ratio > f281_control_95pct_interval)`.
+    ## ℹ In group 1: `label = "Control_AP1903"`.
+    ## Caused by warning in `ratio > f281_control_95pct_interval`:
+    ## ! longer object length is not a multiple of shorter object length
 
 ``` r
 f281_subset_summary2 <- f281_subset %>% group_by(label) %>% count()
@@ -680,14 +736,13 @@ f281b_subset$label <- paste0(f281b_subset$sample,"_",f281b_subset$treatment)
 f281b_subset_summary1 <- f281b_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f281b_control_95pct_interval))
 ```
 
-    ## Warning in ratio > f281b_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f281b_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f281b_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
+    ## Warning: There were 3 warnings in `summarize()`.
+    ## The first warning was:
+    ## ℹ In argument: `unexcised = sum(ratio > f281b_control_95pct_interval)`.
+    ## ℹ In group 2: `label = "Control_none"`.
+    ## Caused by warning in `ratio > f281b_control_95pct_interval`:
+    ## ! longer object length is not a multiple of shorter object length
+    ## ℹ Run `dplyr::last_dplyr_warnings()` to see the 2 remaining warnings.
 
 ``` r
 f281b_subset_summary2 <- f281b_subset %>% group_by(label) %>% count()
@@ -712,17 +767,13 @@ f282_subset$label <- paste0(f282_subset$sample,"_",f282_subset$treatment)
 f282_subset_summary1 <- f282_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f282_control_95pct_interval))
 ```
 
-    ## Warning in ratio > f282_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f282_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f282_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f282_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
+    ## Warning: There were 4 warnings in `summarize()`.
+    ## The first warning was:
+    ## ℹ In argument: `unexcised = sum(ratio > f282_control_95pct_interval)`.
+    ## ℹ In group 1: `label = "Control_AP1903"`.
+    ## Caused by warning in `ratio > f282_control_95pct_interval`:
+    ## ! longer object length is not a multiple of shorter object length
+    ## ℹ Run `dplyr::last_dplyr_warnings()` to see the 3 remaining warnings.
 
 ``` r
 f282_subset_summary2 <- f282_subset %>% group_by(label) %>% count()
@@ -746,11 +797,13 @@ f282b_subset$label <- paste0(f282b_subset$sample,"_",f282b_subset$treatment)
 f282b_subset_summary1 <- f282b_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f282b_control_95pct_interval))
 ```
 
-    ## Warning in ratio > f282b_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f282b_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
+    ## Warning: There were 2 warnings in `summarize()`.
+    ## The first warning was:
+    ## ℹ In argument: `unexcised = sum(ratio > f282b_control_95pct_interval)`.
+    ## ℹ In group 1: `label = "Control_AP1903"`.
+    ## Caused by warning in `ratio > f282b_control_95pct_interval`:
+    ## ! longer object length is not a multiple of shorter object length
+    ## ℹ Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.
 
 ``` r
 f282b_subset_summary2 <- f282b_subset %>% group_by(label) %>% count()
@@ -777,17 +830,13 @@ f283_subset$label <- paste0(f283_subset$sample,"_",f283_subset$treatment)
 f283_subset_summary1 <- f283_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f283_control_95pct_interval))
 ```
 
-    ## Warning in ratio > f283_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f283_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f283_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f283_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
+    ## Warning: There were 4 warnings in `summarize()`.
+    ## The first warning was:
+    ## ℹ In argument: `unexcised = sum(ratio > f283_control_95pct_interval)`.
+    ## ℹ In group 1: `label = "Control_AP1903"`.
+    ## Caused by warning in `ratio > f283_control_95pct_interval`:
+    ## ! longer object length is not a multiple of shorter object length
+    ## ℹ Run `dplyr::last_dplyr_warnings()` to see the 3 remaining warnings.
 
 ``` r
 f283_subset_summary2 <- f283_subset %>% group_by(label) %>% count()
@@ -811,11 +860,13 @@ f283b_subset$label <- paste0(f283b_subset$sample,"_",f283b_subset$treatment)
 f283b_subset_summary1 <- f283b_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f283b_control_95pct_interval))
 ```
 
-    ## Warning in ratio > f283b_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f283b_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
+    ## Warning: There were 2 warnings in `summarize()`.
+    ## The first warning was:
+    ## ℹ In argument: `unexcised = sum(ratio > f283b_control_95pct_interval)`.
+    ## ℹ In group 1: `label = "Control_AP1903"`.
+    ## Caused by warning in `ratio > f283b_control_95pct_interval`:
+    ## ! longer object length is not a multiple of shorter object length
+    ## ℹ Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.
 
 ``` r
 f283b_subset_summary2 <- f283b_subset %>% group_by(label) %>% count()
@@ -839,8 +890,11 @@ f284_subset$label <- paste0(f284_subset$sample,"_",f284_subset$treatment)
 f284_subset_summary1 <- f284_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f284_control_95pct_interval))
 ```
 
-    ## Warning in ratio > f284_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
+    ## Warning: There was 1 warning in `summarize()`.
+    ## ℹ In argument: `unexcised = sum(ratio > f284_control_95pct_interval)`.
+    ## ℹ In group 4: `label = "Flanked_Hygro"`.
+    ## Caused by warning in `ratio > f284_control_95pct_interval`:
+    ## ! longer object length is not a multiple of shorter object length
 
 ``` r
 f284_subset_summary2 <- f284_subset %>% group_by(label) %>% count()
@@ -864,11 +918,13 @@ f284b_subset$label <- paste0(f284b_subset$sample,"_",f284b_subset$treatment)
 f284b_subset_summary1 <- f284b_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f284b_control_95pct_interval))
 ```
 
-    ## Warning in ratio > f284b_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f284b_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
+    ## Warning: There were 2 warnings in `summarize()`.
+    ## The first warning was:
+    ## ℹ In argument: `unexcised = sum(ratio > f284b_control_95pct_interval)`.
+    ## ℹ In group 2: `label = "Control_Hygro"`.
+    ## Caused by warning in `ratio > f284b_control_95pct_interval`:
+    ## ! longer object length is not a multiple of shorter object length
+    ## ℹ Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.
 
 ``` r
 f284b_subset_summary2 <- f284b_subset %>% group_by(label) %>% count()
@@ -891,11 +947,13 @@ f285_subset$label <- paste0(f285_subset$sample,"_",f285_subset$treatment)
 f285_subset_summary1 <- f285_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f285_control_95pct_interval))
 ```
 
-    ## Warning in ratio > f285_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f285_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
+    ## Warning: There were 2 warnings in `summarize()`.
+    ## The first warning was:
+    ## ℹ In argument: `unexcised = sum(ratio > f285_control_95pct_interval)`.
+    ## ℹ In group 1: `label = "Control_Hygro"`.
+    ## Caused by warning in `ratio > f285_control_95pct_interval`:
+    ## ! longer object length is not a multiple of shorter object length
+    ## ℹ Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.
 
 ``` r
 f285_subset_summary2 <- f285_subset %>% group_by(label) %>% count()
@@ -917,11 +975,13 @@ f286_subset$label <- paste0(f286_subset$sample,"_",f286_subset$treatment)
 f286_subset_summary1 <- f286_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f286_control_95pct_interval))
 ```
 
-    ## Warning in ratio > f286_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f286_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
+    ## Warning: There were 2 warnings in `summarize()`.
+    ## The first warning was:
+    ## ℹ In argument: `unexcised = sum(ratio > f286_control_95pct_interval)`.
+    ## ℹ In group 1: `label = "Control_Hygro"`.
+    ## Caused by warning in `ratio > f286_control_95pct_interval`:
+    ## ! longer object length is not a multiple of shorter object length
+    ## ℹ Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.
 
 ``` r
 f286_subset_summary2 <- f286_subset %>% group_by(label) %>% count()
@@ -945,14 +1005,13 @@ f286b_subset$label <- paste0(f286b_subset$sample,"_",f286b_subset$treatment)
 f286b_subset_summary1 <- f286b_subset %>% group_by(label) %>% summarize(unexcised = sum(ratio > f286b_control_95pct_interval))
 ```
 
-    ## Warning in ratio > f286b_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f286b_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
-
-    ## Warning in ratio > f286b_control_95pct_interval: longer object length is not a
-    ## multiple of shorter object length
+    ## Warning: There were 3 warnings in `summarize()`.
+    ## The first warning was:
+    ## ℹ In argument: `unexcised = sum(ratio > f286b_control_95pct_interval)`.
+    ## ℹ In group 1: `label = "Control_AP1903_Hygro"`.
+    ## Caused by warning in `ratio > f286b_control_95pct_interval`:
+    ## ! longer object length is not a multiple of shorter object length
+    ## ℹ Run `dplyr::last_dplyr_warnings()` to see the 2 remaining warnings.
 
 ``` r
 f286b_subset_summary2 <- f286b_subset %>% group_by(label) %>% count()
@@ -982,6 +1041,63 @@ Flanking_AP1903_plot
 ![](Recombinastics_analysis_files/figure-gfm/Effect%20of%20adding%20AP1903%20to%20flanking%20recombinations-1.png)<!-- -->
 
 ``` r
+## To respond to reviewer comments, compare the fraction of red cells in the control and flanked transfections. 
+ggplot() + scale_x_log10() +
+  geom_histogram(data = f131_example, aes(x = YL2.A)) + facet_grid(rows = vars(sample))
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning: Transformation introduced infinite values in continuous x-axis
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 253491 rows containing non-finite values (`stat_bin()`).
+
+![](Recombinastics_analysis_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
+
+``` r
+flanked_unselected_recomb_rates <- data.frame(rbind(
+c("F130",nrow(subset(f130_g718a, YL2.A > 1000)) / nrow(f130_g718a) * 100,nrow(subset(f130_g747a, YL2.A > 1000)) / nrow(f130_g747a) * 100),
+c("F131",nrow(subset(f131_g718a, YL2.A > 1000)) / nrow(f131_g718a) * 100,nrow(subset(f131_g747a, YL2.A > 1000)) / nrow(f131_g747a) * 100),
+c("F132",nrow(subset(f132_g718a, YL2.A > 1000)) / nrow(f132_g718a) * 100,nrow(subset(f132_g747a, YL2.A > 1000)) / nrow(f132_g747a) * 100),
+c("F280",nrow(subset(f280_g718a, YL2.A > 1000)) / nrow(f280_g718a) * 100,nrow(subset(f280_g747a, YL2.A > 1000)) / nrow(f280_g747a) * 100),
+c("F282",nrow(subset(f282_g718a, YL2.A > 1000)) / nrow(f282_g718a) * 100,nrow(subset(f282_g747a, YL2.A > 1000)) / nrow(f282_g747a) * 100),
+c("F283",nrow(subset(f283_g718a, YL2.A > 1000)) / nrow(f283_g718a) * 100,nrow(subset(f283_g747a, YL2.A > 1000)) / nrow(f283_g747a) * 100)))
+
+colnames(flanked_unselected_recomb_rates) <- c("sample","flanked_rate","control_rate")
+
+flanked_unselected_recomb_rates$flanked_rate <- as.numeric(flanked_unselected_recomb_rates$flanked_rate)
+flanked_unselected_recomb_rates$control_rate <- as.numeric(flanked_unselected_recomb_rates$control_rate)
+
+flanked_unselected_recomb_rates$fold_diff <- 0
+flanked_unselected_recomb_rates$fold_diff <- flanked_unselected_recomb_rates$control_rate / flanked_unselected_recomb_rates$flanked_rate
+
+mean(c(flanked_unselected_recomb_rates$flanked_rate,flanked_unselected_recomb_rates$control_rate))
+```
+
+    ## [1] 1.205516
+
+``` r
+##
+
+control_red_not_green <- data.frame(rbind(
+c("F130",nrow(subset(f130_subset, sample == "Control" & YL2.A > 1000 & ratio < quantile((f130_subset %>% filter(sample == "Flanked"))$ratio,0.95)))/nrow(subset(f130_subset, sample == "Control" & YL2.A > 1000))),
+c("F131",nrow(subset(f131_subset, sample == "Control" & YL2.A > 1000 & ratio < quantile((f131_subset %>% filter(sample == "Flanked"))$ratio,0.95)))/nrow(subset(f131_subset, sample == "Control" & YL2.A > 1000))),
+c("F132",nrow(subset(f132_subset, sample == "Control" & YL2.A > 1000 & ratio < quantile((f132_subset %>% filter(sample == "Flanked"))$ratio,0.95)))/nrow(subset(f132_subset, sample == "Control" & YL2.A > 1000))),
+c("F280",nrow(subset(f280_subset, sample == "Control" & YL2.A > 1000 & ratio < quantile((f280_subset %>% filter(sample == "Flanked"))$ratio,0.95)))/nrow(subset(f280_subset, sample == "Control" & YL2.A > 1000))),
+c("F282",nrow(subset(f282_subset, sample == "Control" & YL2.A > 1000 & ratio < quantile((f282_subset %>% filter(sample == "Flanked"))$ratio,0.95)))/nrow(subset(f282_subset, sample == "Control" & YL2.A > 1000))),
+c("F283",nrow(subset(f283_subset, sample == "Control" & YL2.A > 1000 & ratio < quantile((f283_subset %>% filter(sample == "Flanked"))$ratio,0.95)))/nrow(subset(f283_subset, sample == "Control" & YL2.A > 1000)))
+))
+colnames(control_red_not_green) <- c("sample","control_redpos_grnneg")
+control_red_not_green$control_redpos_grnneg <- as.numeric(control_red_not_green$control_redpos_grnneg)
+
+10^mean(log10(control_red_not_green$control_redpos_grnneg))
+```
+
+    ## [1] 0.01966474
+
+``` r
 flanked_seq <- read.csv(file = "data/Flanked_sequencing.csv", header = T, stringsAsFactors = F)
 
 flanked_seq_geomean <- flanked_seq %>% group_by(sample, result) %>% summarize(geomean_fraction = 10^(mean(log10(fraction))))
@@ -1001,24 +1117,39 @@ Flanking_sequencing
 
 ![](Recombinastics_analysis_files/figure-gfm/Flanking%20sequencing%20data-1.png)<!-- -->
 
+``` r
+## Reviewer 2 asked how many reads underlied this figure. To answer this question, I created the table below.
+
+flanked_read_counts <- flanked_seq %>% group_by(replicate, plasmid) %>% summarize(reads_sum = sum(reads))
+```
+
+    ## `summarise()` has grouped output by 'replicate'. You can override using the
+    ## `.groups` argument.
+
+``` r
+print(flanked_read_counts$reads_sum)
+```
+
+    ## [1]  794659  796336 1007299  779515 1216489  874113
+
 ## Creating and initially testing the double landing pad
 
 ## This is relevant to Figure 3
 
 ``` r
-c2_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_none.csv.gz")
-c2_none <- c2_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_none) <- c("fsc","ssc","blu","grn","red","nir")
-c2_none$clone <- "c2"; c2_none$treatment <- "none"
-c2_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_recomb.csv.gz")
-c2_recomb <- c2_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_recomb) <- c("fsc","ssc","blu","grn","red","nir")
-c2_recomb$clone <- "c2"; c2_recomb$treatment <- "recomb"
-c2_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_ap1903.csv.gz")
-c2_ap1903 <- c2_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
-c2_ap1903$clone <- "c2"; c2_ap1903$treatment <- "ap1903"
+c2_orig_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_none.csv.gz")
+c2_orig_none <- c2_orig_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_orig_none) <- c("fsc","ssc","blu","grn","red","nir")
+c2_orig_none$clone <- "c2"; c2_orig_none$treatment <- "none"
+c2_orig_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_recomb.csv.gz")
+c2_orig_recomb <- c2_orig_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_orig_recomb) <- c("fsc","ssc","blu","grn","red","nir")
+c2_orig_recomb$clone <- "c2"; c2_orig_recomb$treatment <- "recomb"
+c2_orig_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone2_ap1903.csv.gz")
+c2_orig_ap1903 <- c2_orig_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c2_orig_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
+c2_orig_ap1903$clone <- "c2"; c2_orig_ap1903$treatment <- "ap1903"
 
 
 cell_number <- 2000
-combined_data <- rbind(c2_none[1:cell_number,], c2_recomb[1:cell_number,], c2_ap1903[1:cell_number,])
+combined_data <- rbind(c2_orig_none[1:cell_number,], c2_orig_recomb[1:cell_number,], c2_orig_ap1903[1:cell_number,])
 combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
 
 plot_alpha <- 0.2
@@ -1026,37 +1157,37 @@ axis_limits <- c(10,1e6)
 
 custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
 
-c2_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c2_orig_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
 
-c2_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c2_orig_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
 
-c2_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c2_orig_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
 
-c2_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c2_orig_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
 
-c2_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c2_orig_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
 
-c2_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c2_orig_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
   geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
-c2_gr_plot
+c2_orig_gr_plot
 ```
 
     ## Warning in self$trans$transform(x): NaNs produced
@@ -1072,7 +1203,7 @@ c2_gr_plot
 ![](Recombinastics_analysis_files/figure-gfm/Initial%20validation%20data%20for%20G542Ac3%20and%20G783Ac2%20cells-1.png)<!-- -->
 
 ``` r
-c2_arranged_plot <- grid.arrange(c2_bn_plot, c2_bg_plot, c2_br_plot, c2_ng_plot, c2_nr_plot, c2_gr_plot, ncol=6, nrow=1)
+c2_orig_arranged_plot <- grid.arrange(c2_orig_bn_plot, c2_orig_bg_plot, c2_orig_br_plot, c2_orig_ng_plot, c2_orig_nr_plot, c2_orig_gr_plot, ncol=6, nrow=1)
 ```
 
     ## Warning in self$trans$transform(x): NaNs produced
@@ -1138,33 +1269,33 @@ c2_arranged_plot <- grid.arrange(c2_bn_plot, c2_bg_plot, c2_br_plot, c2_ng_plot,
 ![](Recombinastics_analysis_files/figure-gfm/Initial%20validation%20data%20for%20G542Ac3%20and%20G783Ac2%20cells-2.png)<!-- -->
 
 ``` r
-ggsave(file = "plots/201002/c2_arranged_plot.png", c2_arranged_plot, height = 3, width = 18)
+ggsave(file = "plots/201002/c2_orig_arranged_plot.png", c2_orig_arranged_plot, height = 3, width = 18)
 
-paste("Percent double positive before selection:", round(sum(c2_recomb$grn >= 3e4 & c2_recomb$red >= 3e4) / nrow(c2_recomb) * 100,2))
+paste("Percent double positive before selection:", round(sum(c2_orig_recomb$grn >= 3e4 & c2_orig_recomb$red >= 3e4) / nrow(c2_orig_recomb) * 100,2))
 ```
 
     ## [1] "Percent double positive before selection: 3.11"
 
 ``` r
-paste("Percent double positive after selection:", round(sum(c2_ap1903$grn >= 3e4 & c2_ap1903$red >= 3e4) / nrow(c2_ap1903) * 100,2))
+paste("Percent double positive after selection:", round(sum(c2_orig_ap1903$grn >= 3e4 & c2_orig_ap1903$red >= 3e4) / nrow(c2_orig_ap1903) * 100,2))
 ```
 
     ## [1] "Percent double positive after selection: 82.98"
 
 ``` r
-c6_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_none.csv.gz")
-c6_none <- c6_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_none) <- c("fsc","ssc","blu","grn","red","nir")
-c6_none$clone <- "c6"; c6_none$treatment <- "none"
-c6_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_recomb.csv.gz")
-c6_recomb <- c6_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_recomb) <- c("fsc","ssc","blu","grn","red","nir")
-c6_recomb$clone <- "c6"; c6_recomb$treatment <- "recomb"
-c6_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_ap1903.csv.gz")
-c6_ap1903 <- c6_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
-c6_ap1903$clone <- "c6"; c6_ap1903$treatment <- "ap1903"
+c6_orig_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_none.csv.gz")
+c6_orig_none <- c6_orig_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_orig_none) <- c("fsc","ssc","blu","grn","red","nir")
+c6_orig_none$clone <- "c6"; c6_orig_none$treatment <- "none"
+c6_orig_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_recomb.csv.gz")
+c6_orig_recomb <- c6_orig_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_orig_recomb) <- c("fsc","ssc","blu","grn","red","nir")
+c6_orig_recomb$clone <- "c6"; c6_orig_recomb$treatment <- "recomb"
+c6_orig_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone6_ap1903.csv.gz")
+c6_orig_ap1903 <- c6_orig_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c6_orig_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
+c6_orig_ap1903$clone <- "c6"; c6_orig_ap1903$treatment <- "ap1903"
 
 
 cell_number <- 2000
-combined_data <- rbind(c6_none[1:cell_number,], c6_recomb[1:cell_number,], c6_ap1903[1:cell_number,])
+combined_data <- rbind(c6_orig_none[1:cell_number,], c6_orig_recomb[1:cell_number,], c6_orig_ap1903[1:cell_number,])
 combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
 
 plot_alpha <- 0.2
@@ -1172,37 +1303,37 @@ axis_limits <- c(10,1e6)
 
 custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
 
-c6_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c6_orig_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
 
-c6_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c6_orig_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
 
-c6_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c6_orig_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
 
-c6_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c6_orig_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
 
-c6_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c6_orig_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
 
-c6_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c6_orig_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
   geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
-c6_gr_plot
+c6_orig_gr_plot
 ```
 
     ## Warning in self$trans$transform(x): NaNs produced
@@ -1218,7 +1349,7 @@ c6_gr_plot
 ![](Recombinastics_analysis_files/figure-gfm/Initial%20validation%20data%20for%20G542Ac3%20and%20G783Ac6%20cells-1.png)<!-- -->
 
 ``` r
-c6_arranged_plot <- grid.arrange(c6_bn_plot, c6_bg_plot, c6_br_plot, c6_ng_plot, c6_nr_plot, c6_gr_plot, ncol=6, nrow=1)
+c6_orig_arranged_plot <- grid.arrange(c6_orig_bn_plot, c6_orig_bg_plot, c6_orig_br_plot, c6_orig_ng_plot, c6_orig_nr_plot, c6_orig_gr_plot, ncol=6, nrow=1)
 ```
 
     ## Warning in self$trans$transform(x): NaNs produced
@@ -1284,33 +1415,33 @@ c6_arranged_plot <- grid.arrange(c6_bn_plot, c6_bg_plot, c6_br_plot, c6_ng_plot,
 ![](Recombinastics_analysis_files/figure-gfm/Initial%20validation%20data%20for%20G542Ac3%20and%20G783Ac6%20cells-2.png)<!-- -->
 
 ``` r
-ggsave(file = "plots/201002/c6_arranged_plot.png", c6_arranged_plot, height = 3, width = 18)
+ggsave(file = "plots/201002/c6_orig_arranged_plot.png", c6_orig_arranged_plot, height = 3, width = 18)
 
-paste("Percent double positive before selection:", round(sum(c6_recomb$grn >= 3e4 & c6_recomb$red >= 3e4) / nrow(c6_recomb) * 100,2))
+paste("Percent double positive before selection:", round(sum(c6_orig_recomb$grn >= 3e4 & c6_orig_recomb$red >= 3e4) / nrow(c6_orig_recomb) * 100,2))
 ```
 
     ## [1] "Percent double positive before selection: 3.9"
 
 ``` r
-paste("Percent double positive after selection:", round(sum(c6_ap1903$grn >= 3e4 & c6_ap1903$red >= 3e4) / nrow(c6_ap1903) * 100,2))
+paste("Percent double positive after selection:", round(sum(c6_orig_ap1903$grn >= 3e4 & c6_orig_ap1903$red >= 3e4) / nrow(c6_orig_ap1903) * 100,2))
 ```
 
     ## [1] "Percent double positive after selection: 60.28"
 
 ``` r
-c11_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_none.csv.gz")
-c11_none <- c11_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_none) <- c("fsc","ssc","blu","grn","red","nir")
-c11_none$clone <- "c11"; c11_none$treatment <- "none"
-c11_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_recomb.csv.gz")
-c11_recomb <- c11_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_recomb) <- c("fsc","ssc","blu","grn","red","nir")
-c11_recomb$clone <- "c11"; c11_recomb$treatment <- "recomb"
-c11_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_ap1903.csv.gz")
-c11_ap1903 <- c11_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
-c11_ap1903$clone <- "c11"; c11_ap1903$treatment <- "ap1903"
+c11_orig_none_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_none.csv.gz")
+c11_orig_none <- c11_orig_none_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_orig_none) <- c("fsc","ssc","blu","grn","red","nir")
+c11_orig_none$clone <- "c11"; c11_orig_none$treatment <- "none"
+c11_orig_recomb_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_recomb.csv.gz")
+c11_orig_recomb <- c11_orig_recomb_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_orig_recomb) <- c("fsc","ssc","blu","grn","red","nir")
+c11_orig_recomb$clone <- "c11"; c11_orig_recomb$treatment <- "recomb"
+c11_orig_ap1903_raw <- read.csv(file = "data/flow/201002_F69_G783A_Clone_Comparisons/Clone11_ap1903.csv.gz")
+c11_orig_ap1903 <- c11_orig_ap1903_raw[,c("FSC.A","SSC.A","VL1.A","BL1.A","YL2.A","RL1.A")]; colnames(c11_orig_ap1903) <- c("fsc","ssc","blu","grn","red","nir")
+c11_orig_ap1903$clone <- "c11"; c11_orig_ap1903$treatment <- "ap1903"
 
 
 cell_number <- 2000
-combined_data <- rbind(c11_none[1:cell_number,], c11_recomb[1:cell_number,], c11_ap1903[1:cell_number,])
+combined_data <- rbind(c11_orig_none[1:cell_number,], c11_orig_recomb[1:cell_number,], c11_orig_ap1903[1:cell_number,])
 combined_data$treatment <- factor(combined_data$treatment, levels = c("recomb","none","ap1903"))
 
 plot_alpha <- 0.2
@@ -1318,37 +1449,37 @@ axis_limits <- c(10,1e6)
 
 custom_color_scale <- c("none" = "magenta", "recomb" = "black", "ap1903" = "cyan")
 
-c11_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c11_orig_bn_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = blu, y = nir, color = treatment), alpha = plot_alpha)
 
-c11_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c11_orig_bg_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = blu, y = grn, color = treatment), alpha = plot_alpha)
 
-c11_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c11_orig_br_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = blu, y = red, color = treatment), alpha = plot_alpha)
 
-c11_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c11_orig_ng_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = nir, y = grn, color = treatment), alpha = plot_alpha)
 
-c11_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c11_orig_nr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = nir, y = red, color = treatment), alpha = plot_alpha)
 
-c11_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
+c11_orig_gr_plot <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank(), legend.position = "none") + 
   scale_color_manual(values = custom_color_scale) +
   scale_x_log10(limits = axis_limits) + scale_y_log10(limits = axis_limits) +
   geom_point(data = combined_data, aes(x = grn, y = red, color = treatment), alpha = plot_alpha) +
   geom_rect(mapping = aes(xmin = 3e4, xmax = 1e6, ymin = 3e4, ymax = 1e6), alpha = 0, color = "black", linetype = 2)
-c11_gr_plot
+c11_orig_gr_plot
 ```
 
     ## Warning in self$trans$transform(x): NaNs produced
@@ -1364,7 +1495,7 @@ c11_gr_plot
 ![](Recombinastics_analysis_files/figure-gfm/Initial%20validation%20data%20for%20G542Ac3%20and%20G783Ac11%20cells-1.png)<!-- -->
 
 ``` r
-c11_arranged_plot <- grid.arrange(c11_bn_plot, c11_bg_plot, c11_br_plot, c11_ng_plot, c11_nr_plot, c11_gr_plot, ncol=6, nrow=1)
+c11_orig_arranged_plot <- grid.arrange(c11_orig_bn_plot, c11_orig_bg_plot, c11_orig_br_plot, c11_orig_ng_plot, c11_orig_nr_plot, c11_orig_gr_plot, ncol=6, nrow=1)
 ```
 
     ## Warning in self$trans$transform(x): NaNs produced
@@ -1430,15 +1561,15 @@ c11_arranged_plot <- grid.arrange(c11_bn_plot, c11_bg_plot, c11_br_plot, c11_ng_
 ![](Recombinastics_analysis_files/figure-gfm/Initial%20validation%20data%20for%20G542Ac3%20and%20G783Ac11%20cells-2.png)<!-- -->
 
 ``` r
-ggsave(file = "plots/201002/c11_arranged_plot.png", c11_arranged_plot, height = 3, width = 18)
+ggsave(file = "plots/201002/c11_orig_arranged_plot.png", c11_orig_arranged_plot, height = 3, width = 18)
 
-paste("Percent double positive before selection:", round(sum(c11_recomb$grn >= 3e4 & c11_recomb$red >= 3e4) / nrow(c11_recomb) * 100,2))
+paste("Percent double positive before selection:", round(sum(c11_orig_recomb$grn >= 3e4 & c11_orig_recomb$red >= 3e4) / nrow(c11_orig_recomb) * 100,2))
 ```
 
     ## [1] "Percent double positive before selection: 2.97"
 
 ``` r
-paste("Percent double positive after selection:", round(sum(c11_ap1903$grn >= 3e4 & c11_ap1903$red >= 3e4) / nrow(c11_ap1903) * 100,2))
+paste("Percent double positive after selection:", round(sum(c11_orig_ap1903$grn >= 3e4 & c11_orig_ap1903$red >= 3e4) / nrow(c11_orig_ap1903) * 100,2))
 ```
 
     ## [1] "Percent double positive after selection: 85.21"
@@ -2083,6 +2214,102 @@ paste("Percent double positive after selection:", round(sum(c11_ap1903$grn >= 3e
 
     ## [1] "Percent double positive after selection: 73.16"
 
+``` r
+## Based on Reviewer #1s comment, lets figure out what the color profile of the green+/red- cells in the ap1903 treated sample are
+
+c11_ap1903_red_partial <- combined_data %>% filter(treatment == "ap1903" & grn > 3e4 & red < 3e4)
+c11_ap1903_red_partial_melt <- melt(c11_ap1903_red_partial[,c("blu","grn","red","nir")])
+```
+
+    ## Using  as id variables
+
+``` r
+ggplot() + scale_x_log10() + 
+  geom_histogram(data = c11_ap1903_red_partial_melt, aes(x = value)) +
+  facet_grid(rows = vars(variable))
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning: Transformation introduced infinite values in continuous x-axis
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 97 rows containing non-finite values (`stat_bin()`).
+
+![](Recombinastics_analysis_files/figure-gfm/G542Ac3%20and%20G783Ac11%20cell%20plots%20for%20manuscript-8.png)<!-- -->
+
+``` r
+paste("Fraction of selected cells that were GFP-high and mCherry-low",nrow(combined_data %>% filter(treatment == "ap1903" & grn > 3e4 & red < 1e4))/nrow(combined_data %>% filter(treatment == "ap1903")))
+```
+
+    ## [1] "Fraction of selected cells that were GFP-high and mCherry-low 0.0735"
+
+``` r
+## Looks like it's cells where the second, GA landing pad is not fully transcribing. There are definitely untransfected double landing pad cells that are Blue-high but NIR-low. I'll try seeing what percentage of the starting cells are that population.
+
+c11_melt <- melt(subset(combined_data, treatment == "none")[,c("blu","grn","red","nir")])
+```
+
+    ## Using  as id variables
+
+``` r
+ggplot() + scale_x_log10() + 
+  geom_histogram(data = c11_melt, aes(x = value)) +
+  facet_grid(rows = vars(variable))
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning in self$trans$transform(x): Transformation introduced infinite values
+    ## in continuous x-axis
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 1314 rows containing non-finite values (`stat_bin()`).
+
+![](Recombinastics_analysis_files/figure-gfm/G542Ac3%20and%20G783Ac11%20cell%20plots%20for%20manuscript-9.png)<!-- -->
+
+``` r
+c11_nir_partial <- combined_data %>% filter(treatment == "none" & blu > 5e2 & nir < 2e3)
+c11_nir_partial_melt <- melt(c11_nir_partial[,c("blu","grn","red","nir")])
+```
+
+    ## Using  as id variables
+
+``` r
+ggplot() + scale_x_log10() + 
+  geom_histogram(data = c11_nir_partial_melt, aes(x = value)) +
+  facet_grid(rows = vars(variable))
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning in self$trans$transform(x): Transformation introduced infinite values
+    ## in continuous x-axis
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 114 rows containing non-finite values (`stat_bin()`).
+
+![](Recombinastics_analysis_files/figure-gfm/G542Ac3%20and%20G783Ac11%20cell%20plots%20for%20manuscript-10.png)<!-- -->
+
+``` r
+paste("Fraction of starting cells that were BFP-high and NIR-low",nrow(combined_data %>% filter(treatment == "none" & blu > 5e2 & nir < 2e3))/nrow(combined_data %>% filter(treatment == "none")))
+```
+
+    ## [1] "Fraction of starting cells that were BFP-high and NIR-low 0.0535"
+
+``` r
+## After all that, what percentage of AP1903 treated cells were Green-high and Red-low?
+
+c11_ap1903_green_red <- combined_data %>% filter(treatment == "ap1903" & grn > 3e4 & red > 3e4)
+
+paste("Fraction of selected cells that were GFP-high and mCherry-high",nrow(c11_ap1903_green_red)/nrow(combined_data %>% filter(treatment == "ap1903")))
+```
+
+    ## [1] "Fraction of selected cells that were GFP-high and mCherry-high 0.739"
+
 Plotting the double landing pad PCA data for all relevant colors
 
 ``` r
@@ -2222,8 +2449,8 @@ ggplot() + theme_bw() + scale_x_log10() + geom_histogram(data = pca_details, aes
 
     ## Warning in self$trans$transform(x): NaNs produced
 
-    ## Warning in self$trans$transform(x): Transformation introduced infinite values in
-    ## continuous x-axis
+    ## Warning in self$trans$transform(x): Transformation introduced infinite values
+    ## in continuous x-axis
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
@@ -2237,8 +2464,8 @@ ggplot() + theme_bw() + scale_x_log10() + geom_histogram(data = pca_details, aes
 
     ## Warning in self$trans$transform(x): NaNs produced
 
-    ## Warning in self$trans$transform(x): Transformation introduced infinite values in
-    ## continuous x-axis
+    ## Warning in self$trans$transform(x): Transformation introduced infinite values
+    ## in continuous x-axis
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
@@ -2252,8 +2479,8 @@ ggplot() + theme_bw() + scale_x_log10() + geom_histogram(data = pca_details, aes
 
     ## Warning in self$trans$transform(x): NaNs produced
 
-    ## Warning in self$trans$transform(x): Transformation introduced infinite values in
-    ## continuous x-axis
+    ## Warning in self$trans$transform(x): Transformation introduced infinite values
+    ## in continuous x-axis
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
@@ -2267,8 +2494,8 @@ ggplot() + theme_bw() + scale_x_log10() + geom_histogram(data = pca_details, aes
 
     ## Warning in self$trans$transform(x): NaNs produced
 
-    ## Warning in self$trans$transform(x): Transformation introduced infinite values in
-    ## continuous x-axis
+    ## Warning in self$trans$transform(x): Transformation introduced infinite values
+    ## in continuous x-axis
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
@@ -2524,6 +2751,360 @@ pca_vectorplot
 ``` r
 ggsave(file = "plots/pca_vectorplot.pdf", pca_vectorplot, height = 2, width = 2)
 ```
+
+## Since reviewer 2 asked, I am now also collecting summary statistics on the double landing pad flow cytometry
+
+``` r
+c2_orig_none <- c2_orig_none %>% mutate(replicate = 1)
+c2_orig_recomb <- c2_orig_recomb %>% mutate(replicate = 1)
+c2_orig_ap1903 <- c2_orig_ap1903 %>% mutate(replicate = 1)
+c6_orig_none <- c6_orig_none %>% mutate(replicate = 1)
+c6_orig_recomb <- c6_orig_recomb %>% mutate(replicate = 1)
+c6_orig_ap1903 <- c6_orig_ap1903 %>% mutate(replicate = 1)
+c11_orig_none <- c11_orig_none %>% mutate(replicate = 1)
+c11_orig_recomb <- c11_orig_recomb %>% mutate(replicate = 1)
+c11_orig_ap1903 <- c11_orig_ap1903 %>% mutate(replicate = 1)
+c2_none <- c2_none %>% mutate(replicate = 2)
+c2_recomb <- c2_recomb %>% mutate(replicate = 2)
+c2_ap1903 <- c2_ap1903 %>% mutate(replicate = 2)
+c6_none <- c6_none %>% mutate(replicate = 2)
+c6_recomb <- c6_recomb %>% mutate(replicate = 2)
+c6_ap1903 <- c6_ap1903 %>% mutate(replicate = 2)
+c11_none <- c11_none %>% mutate(replicate = 2)
+c11_recomb <- c11_recomb %>% mutate(replicate = 2)
+c11_ap1903 <- c11_ap1903 %>% mutate(replicate = 2)
+
+dlp_analysis <- rbind(c2_orig_none,c2_orig_recomb,c2_orig_ap1903,c6_orig_none,c6_orig_recomb,c6_orig_ap1903,c11_orig_none,c11_orig_recomb,c11_orig_ap1903,c2_none,c2_recomb,c2_ap1903,c6_none,c6_recomb,c6_ap1903,c11_none,c11_recomb,c11_ap1903)
+
+ggplot() + scale_x_log10() + geom_density(data = dlp_analysis, aes(x = blu))
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning: Transformation introduced infinite values in continuous x-axis
+
+    ## Warning: Removed 39675 rows containing non-finite values (`stat_density()`).
+
+![](Recombinastics_analysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+``` r
+ggplot() + scale_x_log10() + geom_density(data = dlp_analysis, aes(x = grn))
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning: Transformation introduced infinite values in continuous x-axis
+
+    ## Warning: Removed 1632627 rows containing non-finite values (`stat_density()`).
+
+![](Recombinastics_analysis_files/figure-gfm/unnamed-chunk-2-2.png)<!-- -->
+
+``` r
+ggplot() + scale_x_log10() + geom_density(data = dlp_analysis, aes(x = red))
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning: Transformation introduced infinite values in continuous x-axis
+
+    ## Warning: Removed 1523651 rows containing non-finite values (`stat_density()`).
+
+![](Recombinastics_analysis_files/figure-gfm/unnamed-chunk-2-3.png)<!-- -->
+
+``` r
+ggplot() + scale_x_log10() + geom_density(data = dlp_analysis, aes(x = nir))
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning: Transformation introduced infinite values in continuous x-axis
+
+    ## Warning: Removed 134620 rows containing non-finite values (`stat_density()`).
+
+![](Recombinastics_analysis_files/figure-gfm/unnamed-chunk-2-4.png)<!-- -->
+
+``` r
+blu_stat_density_plot <- ggplot() + scale_x_log10() + geom_density(data = dlp_analysis, aes(x = blu))
+blu_stat_density_values <- blu_stat_density_plot %>% 
+  ggplot_build() %>% 
+  `[[`("data") %>% 
+  `[[`(1) %>% select(x,y)
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning: Transformation introduced infinite values in continuous x-axis
+
+    ## Warning: Removed 39675 rows containing non-finite values (`stat_density()`).
+
+``` r
+ggplot() + geom_point(data = blu_stat_density_values, aes(x = x, y = y))
+```
+
+![](Recombinastics_analysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+``` r
+blu_stat_density_miny <- as.numeric(blu_stat_density_values %>% filter(x > 2.75 & x < 3.25) %>% summarize(miny = min(y)))
+blu_stat_density_minx <- blu_stat_density_values[blu_stat_density_values$y == blu_stat_density_miny,"x"]
+ggplot() + geom_point(data = blu_stat_density_values, aes(x = x, y = y)) + geom_vline(xintercept = blu_stat_density_minx)
+```
+
+![](Recombinastics_analysis_files/figure-gfm/unnamed-chunk-3-2.png)<!-- -->
+
+``` r
+dlp_analysis_all <- dlp_analysis %>% group_by(clone, treatment, replicate) %>% tally()
+dlp_analysis_blupos <- dlp_analysis %>% filter(blu >= 10^blu_stat_density_minx) %>% group_by(clone, treatment, replicate) %>% tally()
+
+dlp_analysis_summary <- left_join(dlp_analysis_all,dlp_analysis_blupos,c("clone", "treatment", "replicate"))
+colnames(dlp_analysis_summary)[4] <- "all"
+colnames(dlp_analysis_summary)[5] <- "blu_pos"
+dlp_analysis_summary$blupos_pct <- dlp_analysis_summary$blu_pos/dlp_analysis_summary$all
+dlp_analysis_summary$treatment <- factor(dlp_analysis_summary$treatment, levels = c("none","recomb","ap1903"))
+DLP_summary_blupos_plot <- ggplot() + labs(x = NULL, y = "Percent of cells", title = "Blue+") + scale_y_continuous(limits = c(0,1)) +
+  geom_quasirandom(data = dlp_analysis_summary, aes(x = treatment, y = blupos_pct, color = clone), alpha = 0.5) 
+ggsave(file = "plots/DLP_summary_blupos_plot.pdf", DLP_summary_blupos_plot, height = 1.25, width = 2.75)
+
+## We first looked at blue positive cells. Now lets next look at NIR
+nir_stat_density_plot <- ggplot() + scale_x_log10() + geom_density(data = dlp_analysis, aes(x = nir))
+nir_stat_density_values <- nir_stat_density_plot %>% 
+  ggplot_build() %>% 
+  `[[`("data") %>% 
+  `[[`(1) %>% select(x,y)
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning: Transformation introduced infinite values in continuous x-axis
+
+    ## Warning: Removed 134620 rows containing non-finite values (`stat_density()`).
+
+``` r
+ggplot() + geom_point(data = nir_stat_density_values, aes(x = x, y = y))
+```
+
+![](Recombinastics_analysis_files/figure-gfm/unnamed-chunk-3-3.png)<!-- -->
+
+``` r
+nir_stat_density_miny <- as.numeric(nir_stat_density_values %>% filter(x > 3.25 & x < 4) %>% summarize(miny = min(y)))
+nir_stat_density_minx <- nir_stat_density_values[nir_stat_density_values$y == nir_stat_density_miny,"x"]
+ggplot() + geom_point(data = nir_stat_density_values, aes(x = x, y = y)) + geom_vline(xintercept = nir_stat_density_minx)
+```
+
+![](Recombinastics_analysis_files/figure-gfm/unnamed-chunk-3-4.png)<!-- -->
+
+``` r
+dlp_analysis_nirpos <- dlp_analysis %>% filter(nir >= 10^nir_stat_density_minx) %>% group_by(clone, treatment, replicate) %>% tally()
+
+dlp_analysis_summary <- left_join(dlp_analysis_summary,dlp_analysis_nirpos,c("clone", "treatment", "replicate"))
+colnames(dlp_analysis_summary)[7] <- "nir_pos"
+dlp_analysis_summary$nirpos_pct <- dlp_analysis_summary$nir_pos/dlp_analysis_summary$all
+DLP_summary_nirpos_plot <- ggplot() + labs(x = NULL, y = "Percent of cells", title = "NIR+") + scale_y_continuous(limits = c(0,1)) +
+  geom_quasirandom(data = dlp_analysis_summary, aes(x = treatment, y = nirpos_pct, color = clone), alpha = 0.5)
+ggsave(file = "plots/DLP_summary_nirpos_plot.pdf", DLP_summary_nirpos_plot, height = 1.25, width = 2.75)
+
+## Next look at green cells
+grn_stat_density_plot <- ggplot() + scale_x_log10() + geom_density(data = dlp_analysis, aes(x = grn))
+grn_stat_density_values <- grn_stat_density_plot %>% 
+  ggplot_build() %>% 
+  `[[`("data") %>% 
+  `[[`(1) %>% select(x,y)
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning: Transformation introduced infinite values in continuous x-axis
+
+    ## Warning: Removed 1632627 rows containing non-finite values (`stat_density()`).
+
+``` r
+ggplot() + geom_point(data = grn_stat_density_values, aes(x = x, y = y))
+```
+
+![](Recombinastics_analysis_files/figure-gfm/unnamed-chunk-3-5.png)<!-- -->
+
+``` r
+grn_stat_density_miny <- as.numeric(grn_stat_density_values %>% filter(x > 2 & x < 4) %>% summarize(miny = min(y)))
+grn_stat_density_minx <- grn_stat_density_values[grn_stat_density_values$y == grn_stat_density_miny,"x"]
+ggplot() + geom_point(data = grn_stat_density_values, aes(x = x, y = y)) + geom_vline(xintercept = grn_stat_density_minx)
+```
+
+![](Recombinastics_analysis_files/figure-gfm/unnamed-chunk-3-6.png)<!-- -->
+
+``` r
+## Next look at green cells
+red_stat_density_plot <- ggplot() + scale_x_log10() + geom_density(data = dlp_analysis, aes(x = red))
+red_stat_density_values <- red_stat_density_plot %>% 
+  ggplot_build() %>% 
+  `[[`("data") %>% 
+  `[[`(1) %>% select(x,y)
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning: Transformation introduced infinite values in continuous x-axis
+
+    ## Warning: Removed 1523651 rows containing non-finite values (`stat_density()`).
+
+``` r
+ggplot() + geom_point(data = red_stat_density_values, aes(x = x, y = y))
+```
+
+![](Recombinastics_analysis_files/figure-gfm/unnamed-chunk-3-7.png)<!-- -->
+
+``` r
+red_stat_density_miny <- as.numeric(red_stat_density_values %>% filter(x > 2 & x < 4) %>% summarize(miny = min(y)))
+red_stat_density_minx <- red_stat_density_values[red_stat_density_values$y == red_stat_density_miny,"x"]
+ggplot() + geom_point(data = red_stat_density_values, aes(x = x, y = y)) + geom_vline(xintercept = red_stat_density_minx)
+```
+
+![](Recombinastics_analysis_files/figure-gfm/unnamed-chunk-3-8.png)<!-- -->
+
+``` r
+## Now look at green only, red only, and green and red cells
+dlp_analysis_grnpos_redneg <- dlp_analysis %>% filter(grn >= 10^grn_stat_density_minx & red <= 10^red_stat_density_minx) %>% group_by(clone, treatment, replicate) %>% tally()
+
+dlp_analysis_summary <- left_join(dlp_analysis_summary,dlp_analysis_grnpos_redneg,c("clone", "treatment", "replicate"))
+colnames(dlp_analysis_summary)[9] <- "grnpos_redneg"
+dlp_analysis_summary$grnpos_redneg_pct <- dlp_analysis_summary$grnpos_redneg/dlp_analysis_summary$all
+DLP_summary_grnpos_redneg_plot <- ggplot() + labs(x = NULL, y = "Percent of cells", title = "Green+ Red-") + scale_y_continuous(limits = c(0,1)) +
+  geom_quasirandom(data = dlp_analysis_summary, aes(x = treatment, y = grnpos_redneg_pct, color = clone), alpha = 0.5) 
+ggsave(file = "plots/DLP_summary_grnpos_redneg_plot.pdf", DLP_summary_grnpos_redneg_plot, height = 1.25, width = 2.75)
+
+dlp_analysis_grnpos_redpos <- dlp_analysis %>% filter(grn >= 10^grn_stat_density_minx & red >= 10^red_stat_density_minx) %>% group_by(clone, treatment, replicate) %>% tally()
+
+dlp_analysis_summary <- left_join(dlp_analysis_summary,dlp_analysis_grnpos_redpos,c("clone", "treatment", "replicate"))
+colnames(dlp_analysis_summary)[11] <- "grnpos_redpos"
+dlp_analysis_summary$grnpos_redpos_pct <- dlp_analysis_summary$grnpos_redpos/dlp_analysis_summary$all
+DLP_summary_grnpos_redpos_plot <- ggplot() + labs(x = NULL, y = "Percent of cells", title = "Green+ Red+") + scale_y_continuous(limits = c(0,1)) +
+  geom_quasirandom(data = dlp_analysis_summary, aes(x = treatment, y = grnpos_redpos_pct, color = clone), alpha = 0.5) 
+ggsave(file = "plots/DLP_summary_grnpos_redpos_plot.pdf", DLP_summary_grnpos_redpos_plot, height = 1.25, width = 2.75)
+
+dlp_analysis_grnneg_redpos <- dlp_analysis %>% filter(grn <= 10^grn_stat_density_minx & red >= 10^red_stat_density_minx) %>% group_by(clone, treatment, replicate) %>% tally()
+
+dlp_analysis_summary <- left_join(dlp_analysis_summary,dlp_analysis_grnneg_redpos,c("clone", "treatment", "replicate"))
+colnames(dlp_analysis_summary)[13] <- "grnneg_redpos"
+dlp_analysis_summary$grnneg_redpos_pct <- dlp_analysis_summary$grnneg_redpos/dlp_analysis_summary$all
+DLP_summary_grnneg_redpos_plot <- ggplot() + labs(x = NULL, y = "Percent of cells", title = "Green- Red+") + scale_y_continuous(limits = c(0,1)) +
+  geom_quasirandom(data = dlp_analysis_summary, aes(x = treatment, y = grnneg_redpos_pct, color = clone), alpha = 0.5) 
+ggsave(file = "plots/DLP_summary_grnneg_redpos_plot.pdf", DLP_summary_grnneg_redpos_plot, height = 1.25, width = 2.75)
+
+## Print out some statistics for writing into the paper
+recombined_dlp_only <- dlp_analysis_summary %>% filter(treatment == "recomb")
+
+paste("Mean of singly recombined cells by green-red analysis:", round(mean(c((recombined_dlp_only$grnpos_redneg_pct),(recombined_dlp_only$grnneg_redpos_pct))),3))
+```
+
+    ## [1] "Mean of singly recombined cells by green-red analysis: 0.103"
+
+``` r
+paste("Mean of doubly recombined cells by green-red analysis:", round(mean(c((recombined_dlp_only$grnpos_redpos_pct))),3))
+```
+
+    ## [1] "Mean of doubly recombined cells by green-red analysis: 0.082"
+
+``` r
+selected_dlp_only <- dlp_analysis_summary %>% filter(treatment == "ap1903" & clone != "c6")
+
+paste("Mean of doubly recombined cells after selection by green-red analysis:", round(mean(c((selected_dlp_only$grnpos_redpos_pct))),3))
+```
+
+    ## [1] "Mean of doubly recombined cells after selection by green-red analysis: 0.851"
+
+``` r
+dlp_analysis_for_pca <- dlp_analysis[,c("blu","grn","red","nir")]
+dlp_analysis_for_pca2 <- cbind(dlp_analysis_for_pca, scale(dlp_analysis_for_pca, clone2.pca$center, clone2.pca$scale) %*% clone2.pca$rotation)
+dlp_analysis_for_pca3 <- cbind(dlp_analysis_for_pca2,dlp_analysis[,c("clone", "treatment", "replicate")])
+
+dlp_analysis_for_pca3_c6 <- dlp_analysis_for_pca3 %>% mutate(PC2B = PC2 - 2, label = paste0(clone,"_",replicate), pc1_2b_ratio = PC1/PC2B)
+dlp_analysis_for_pca3_c6$treatment <- factor(dlp_analysis_for_pca3_c6$treatment, levels = c("none","recomb","ap1903"))
+
+custom_color_scale3 <- c("c2_1" = "green", "c2_2" = "green", "c6_1" = "blue", "c6_2" = "blue", "c11_1" = "red", "c11_2" = "red")
+
+All_data_PCA_histogram <- ggplot() + theme_bw() + theme(panel.grid.minor = element_blank()) + 
+  scale_fill_manual(values = custom_color_scale3) +
+  scale_x_continuous(limits = c(-1.1,1.5)) +
+  geom_density(data = dlp_analysis_for_pca3_c6, aes(x = pc1_2b_ratio, fill = label), alpha = 0.2, size = 0.3) +
+  geom_vline(xintercept = -0.2, linetype = 2, alpha = 0.4, color = "red") +
+  geom_vline(xintercept = 0.5, linetype = 2, alpha = 0.4, color = "purple") +
+  facet_grid(rows = vars(treatment), scales = "free_y")
+All_data_PCA_histogram
+```
+
+    ## Warning: Removed 23902 rows containing non-finite values (`stat_density()`).
+
+![](Recombinastics_analysis_files/figure-gfm/PCA%20on%20all%20datapoints%20from%20all%20replicates%20from%20all%20clones-1.png)<!-- -->
+
+``` r
+ggsave(file = "plots/All_data_PCA_histogram.pdf", All_data_PCA_histogram, height = 2.4, width = 3)
+```
+
+    ## Warning: Removed 23902 rows containing non-finite values (`stat_density()`).
+
+``` r
+dlp_analysis_for_pca3_c6_summary_all <- dlp_analysis_for_pca3_c6 %>% group_by(clone, treatment, replicate) %>% tally()
+dlp_analysis_for_pca3_c6_summary_none <- dlp_analysis_for_pca3_c6 %>% filter(pc1_2b_ratio < -0.2) %>% group_by(clone, treatment, replicate) %>% tally()
+dlp_analysis_for_pca3_c6_summary_single <- dlp_analysis_for_pca3_c6 %>% filter(pc1_2b_ratio > -0.2 & pc1_2b_ratio < 0.5) %>% group_by(clone, treatment, replicate) %>% tally()
+dlp_analysis_for_pca3_c6_summary_double <- dlp_analysis_for_pca3_c6 %>% filter(pc1_2b_ratio > 0.5) %>% group_by(clone, treatment, replicate) %>% tally()
+
+dlp_analysis_for_pca3_c6_summary_combined <- left_join(dlp_analysis_for_pca3_c6_summary_all,dlp_analysis_for_pca3_c6_summary_none, c("clone","treatment","replicate"))
+dlp_analysis_for_pca3_c6_summary_combined2 <- left_join(dlp_analysis_for_pca3_c6_summary_combined, dlp_analysis_for_pca3_c6_summary_single, c("clone","treatment","replicate")) 
+dlp_analysis_for_pca3_c6_summary_combined3 <- left_join(dlp_analysis_for_pca3_c6_summary_combined2, dlp_analysis_for_pca3_c6_summary_double, c("clone","treatment","replicate")) 
+
+colnames(dlp_analysis_for_pca3_c6_summary_combined3)[4:7] <- c("all","none","single","double")
+dlp_analysis_for_pca3_c6_summary_combined3 <- dlp_analysis_for_pca3_c6_summary_combined3 %>% mutate(none_ratio = none / all, single_ratio = single / all, double_ratio = double / all, label = paste0(clone,"_",replicate))
+
+library(reshape2)
+```
+
+    ## 
+    ## Attaching package: 'reshape2'
+
+    ## The following objects are masked from 'package:reshape':
+    ## 
+    ##     colsplit, melt, recast
+
+    ## The following object is masked from 'package:tidyr':
+    ## 
+    ##     smiths
+
+``` r
+dlp_analysis_for_pca3_c6_summary_combined3_melt <- melt(dlp_analysis_for_pca3_c6_summary_combined3[,c("treatment","label","none_ratio","single_ratio","double_ratio")], "id" = c("treatment","label"))
+
+PCA_recombination_plot <- ggplot() + theme_bw() + theme(panel.grid.minor.x = element_blank(), panel.grid.major.x = element_blank()) + 
+  scale_color_manual(values = custom_color_scale3) +
+  scale_y_continuous(breaks = c(0,0.5,1)) +
+  geom_quasirandom(data = dlp_analysis_for_pca3_c6_summary_combined3_melt, aes(x = variable, y = value, color = label), alpha = 0.25) +
+  facet_grid(rows = vars(treatment))
+PCA_recombination_plot
+```
+
+![](Recombinastics_analysis_files/figure-gfm/PCA%20on%20all%20datapoints%20from%20all%20replicates%20from%20all%20clones-2.png)<!-- -->
+
+``` r
+ggsave(file = "plots/PCA_recombination_plot.pdf", PCA_recombination_plot, height = 2.45, width = 2.6)
+
+
+## Print out some statistics for writing into the paper
+recombined_dlp_pca_only <- dlp_analysis_for_pca3_c6_summary_combined3_melt %>% filter(treatment == "recomb")
+
+paste("Mean of singly recombined cells by pca-based analysis:", round(mean(subset(recombined_dlp_pca_only,variable == "single_ratio")$value),3))
+```
+
+    ## [1] "Mean of singly recombined cells by pca-based analysis: 0.129"
+
+``` r
+paste("Mean of doubly recombined cells by pca-based analysis:", round(mean(subset(recombined_dlp_pca_only,variable == "double_ratio")$value),3))
+```
+
+    ## [1] "Mean of doubly recombined cells by pca-based analysis: 0.054"
+
+``` r
+selected_dlp_pca_only <- dlp_analysis_for_pca3_c6_summary_combined3_melt %>% filter(treatment == "ap1903" & label != "c6_1" & label != "c6_2")
+
+paste("Mean of doubly recombined cells after selection by pca-based analysis:", round(mean(subset(selected_dlp_pca_only,variable == "double_ratio")$value),3))
+```
+
+    ## [1] "Mean of doubly recombined cells after selection by pca-based analysis: 0.992"
 
 ## Double landing pad cells for biosensors
 
@@ -3257,10 +3838,24 @@ Orthogonal_plasmid_recombinations
 ![](Recombinastics_analysis_files/figure-gfm/Recombination%20mixture%20experiment%20plot-1.png)<!-- -->
 
 ``` r
+Orthogonal_plasmid_recombinations_linear <- ggplot() + theme(panel.grid.major.x = element_blank()) +
+  labs(x = "AttP plasmid (individually tested)", y = "Fraction of\nrecombinants", color = "AttB\nplasmid\n(mixed)") + 
+  geom_point(data = gn_combined_summary2, aes(x = attP, y = mean, color = attB), position = position_dodge(width = 0.6), shape = 95, size = 4) +
+  geom_point(data = gn_combined, aes(x = attP, y = final_freq, color = attB), position = position_dodge(width = 0.6), alpha = 0.4) +
+  #geom_errorbar(data = gn_combined_summary2, aes(x = attP, ymin = mean - sd/sqrt(2)*1.96, ymax = mean + sd/sqrt(3)*1.96, color = attB), position = position_dodge(width = 0.6), width = 0.5, alpha = 0.5) +
+  geom_point(data = gn_combined_summary2, aes(x = attP, y = mean, color = attB), position = position_dodge(width = 0.6), shape = 95, size = 4) +
+  NULL
+ggsave(file = "plots/Orthogonal_plasmid_recombinations_linear.pdf", Orthogonal_plasmid_recombinations_linear, height = 2, width = 4.2)
+Orthogonal_plasmid_recombinations_linear
+```
+
+![](Recombinastics_analysis_files/figure-gfm/Recombination%20mixture%20experiment%20plot-2.png)<!-- -->
+
+``` r
 recomb_mixture_test <- gn_combined_summary[1:16,c("attP","attB")]
 colnames(recomb_mixture_test) <- c("lp1","lp2")
 
-simulation_test_size = 50000
+simulation_test_size = 100000
 recomb_mixture_test$on_target <- NA
 
 for(x in 1:nrow(recomb_mixture_test)){
@@ -3275,12 +3870,14 @@ for(x in 1:nrow(recomb_mixture_test)){
   }
   if(recomb_mix_lp1 != recomb_mix_lp2){
     lp1_probs <- gn_combined_summary %>% filter(attP == recomb_mix_lp1 & attB %in% c(recomb_mix_lp1, recomb_mix_lp2))
+    lp1_probs$norm <- lp1_probs$mean/sum(lp1_probs$mean)
     lp2_probs <- gn_combined_summary %>% filter(attP == recomb_mix_lp2 & attB %in% c(recomb_mix_lp1, recomb_mix_lp2))
-    lp1_sampling <- sample(x = lp1_probs$attB, prob = lp1_probs$mean , size = simulation_test_size, replace = T)
-    lp2_sampling <- sample(x = lp2_probs$attB, prob = lp2_probs$mean , size = simulation_test_size, replace = T)
+    lp2_probs$norm <- lp2_probs$mean/sum(lp2_probs$mean)
+    lp1_sampling <- sample(x = lp1_probs$attB, prob = lp1_probs$norm , size = simulation_test_size, replace = T)
+    lp2_sampling <- sample(x = lp2_probs$attB, prob = lp2_probs$norm , size = simulation_test_size, replace = T)
     results_frame <- data.frame("lp1_on_target" = lp1_sampling == recomb_mix_lp1, "lp2_on_target" = lp2_sampling == recomb_mix_lp2)
     results_frame$sum <- results_frame$lp1_on_target + results_frame$lp2_on_target
-    recomb_mixture_test$on_target[x] <- sum(results_frame$sum == 2)
+    recomb_mixture_test$on_target[x] <- sum(results_frame$sum == 2) + sum(results_frame$sum == 0)
   }
 }
 recomb_mixture_test$frac_on_target <- recomb_mixture_test$on_target / simulation_test_size
@@ -3288,6 +3885,7 @@ recomb_mixture_test$frac_on_target <- recomb_mixture_test$on_target / simulation
 Double_LP_heatmap <- ggplot() + labs(x = "First landing pad", y = "Second landing pad", fill = "Fraction\nwith unique\nrecombinant\nplasmid pair") + 
   scale_fill_gradient2(low = "white", high = "red", midpoint = 0.8) + 
   geom_tile(data = recomb_mixture_test, aes(x = lp1, y = lp2, fill = frac_on_target)) +
+  geom_tile(data = recomb_mixture_test %>% filter(lp1 == "GC" | lp2 == "GC"), aes(x = lp1, y = lp2, fill = frac_on_target), color = "blue", alpha = 0, size = 0.5) +
   geom_text(data = recomb_mixture_test, aes(x = lp1, y = lp2, label = round(frac_on_target,2)), size = 3)
 ggsave(file = "plots/Double_LP_heatmap.pdf", Double_LP_heatmap, height = 2, width = 3.3)
 Double_LP_heatmap
